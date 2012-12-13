@@ -7,7 +7,10 @@ Gem::Specification.new do |s|
   s.description = ''
   s.authors     = ['CG Labs']
   s.email       = ['eng@commongroundpublishing.com']
-  s.files       = Dir['lib/**/*.rb', 'spec/**/*.rb']
+  s.files       = Dir['VERSION',
+                      'MIT-LICENSE',
+                      'lib/**/*.rb',
+                      'spec/**/*.rb']
 
   s.add_dependency 'mini_aether'
 
