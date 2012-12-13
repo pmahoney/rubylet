@@ -6,7 +6,10 @@ Gem::Specification.new do |s|
   s.email       = ['eng@commongroundpublishing.com']
   s.description = 'Java Servlet implementation that forwards to Rack application'
   s.summary     = 'Java Servlet implementation that forwards to Rack application'
-  s.files        = Dir['lib/**/*.rb', 'spec/**/*.rb']
+  s.files       = Dir['VERSION',
+                      'MIT-LICENSE',
+                      'lib/**/*.rb',
+                      'spec/**/*.rb']
 
   s.add_development_dependency 'minitest-matchers'
   s.add_development_dependency 'rake'
