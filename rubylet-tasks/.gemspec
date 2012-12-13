@@ -7,7 +7,12 @@ Gem::Specification.new do |s|
   s.description = ''
   s.authors     = ['CG Labs']
   s.email       = ['eng@commongroundpublishing.com']
-  s.files       = Dir['lib/**/*.rb', 'spec/**/*.rb']
+  s.files       = Dir['VERSION',
+                      'MIT-LICENSE',
+                      'lib/**/*.rb',
+                      'lib/**/*.jar',
+                      'spec/**/*.rb',
+                      'examples/**/*']
 
   s.add_dependency 'builder'
   s.add_dependency 'rake'

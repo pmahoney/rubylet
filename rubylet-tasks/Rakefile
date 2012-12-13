@@ -12,7 +12,7 @@ def gemspec
   @gemspec
 end
 
-$rubylet_jar = "lib/rubylet-ee-#{gemspec.version}"
+$rubylet_jar = "lib/rubylet-ee-#{gemspec.version}.jar"
 
 file $rubylet_jar do
   # This adds a file to the gemspec and also copies rubylet jar file
