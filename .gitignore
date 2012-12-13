@@ -1,0 +1,8 @@
+*~
+pkg
+.classpath
+.project
+.settings
+Gemfile.lock
+target
+*.jar

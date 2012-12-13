@@ -1,0 +1,24 @@
+require 'rake/testtask'
+require 'rake/version_task'
+require 'rubygems/package_task'
+
+def gemspec
+  unless @gemspec
+    @gemspec = Gem::Specification.load(Dir.glob('*.gemspec').first)
+  end
+
+  @gemspec
+end
+
+Rake::TestTask.new(:test) do |t|
+  t.pattern = 'spec/**/*_spec.rb'
+  t.libs.push 'spec'
+end
+
+task :spec => :test
+
+Rake::VersionTask.new
+
+Gem::PackageTask.new(gemspec) do |p|
+  p.gem_spec = gemspec
+end

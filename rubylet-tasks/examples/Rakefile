@@ -1,0 +1,11 @@
+require 'rubylet/war_task'
+
+Rubylet::WarTask.new do |w|
+  w.name = 'test_app'
+  w.external_jruby
+  w.rubylet do |r|
+    r.name = 'example'
+    # if you cannot add 'rubylet' to the Gemfile, list it here.
+    # r.gem 'rubylet', '>= 0'
+  end
+end

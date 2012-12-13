@@ -1,0 +1,4 @@
+source 'http://rubygems.org'
+gem 'rubylet-tasks', :path => '../'
+gem 'rubylet', :path => '../../rubylet'
+gem 'rack'
