@@ -12,7 +12,12 @@ def gemspec
   @gemspec
 end
 
-$rubylet_jar = "lib/rubylet-ee-#{gemspec.version}.jar"
+jar_version = if gemspec.version.to_s =~ /(.*)a$/
+                "#{$1}-SNAPSHOT"
+              else
+                gemspec.version.to_s
+              end
+$rubylet_jar = "lib/rubylet-ee-#{jar_version}.jar"
 
 file $rubylet_jar do
   # This adds a file to the gemspec and also copies rubylet jar file
@@ -23,7 +28,7 @@ file $rubylet_jar do
   # repository...
   require 'mini_aether'
   MiniAether.setup do
-    jar "com.commongroundpublishing:rubylet-ee:#{gemspec.version}"
+    jar "com.commongroundpublishing:rubylet-ee:#{jar_version}"
   end
 
   rubylet_jar_source =
