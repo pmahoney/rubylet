@@ -16,7 +16,7 @@ import org.jruby.CompatVersion;
 import org.jruby.RubyInstanceConfig.CompileMode;
 import org.jruby.embed.LocalContextScope;
 
-import com.commongroundpublishing.rubylet.Servlet;
+import com.commongroundpublishing.rubylet.Factory;
 import com.commongroundpublishing.rubylet.config.ChainedConfig;
 import com.commongroundpublishing.rubylet.config.FilterConfigConfig;
 import com.commongroundpublishing.rubylet.config.IConfig;
@@ -44,7 +44,7 @@ public class RubyConfig {
     public static String getWebInfPath() {
         final String resource = "rubylet_helper.rb";
         final URL url =
-                Servlet.class.getClassLoader().getResource(resource);
+                Factory.class.getClassLoader().getResource(resource);
 
         // TODO: this works for Jetty.  What about others?
         if (url.getProtocol().equals("jar")) {

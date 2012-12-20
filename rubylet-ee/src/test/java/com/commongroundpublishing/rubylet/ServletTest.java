@@ -24,9 +24,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.commongroundpublishing.rubylet.ExternalJRubyLoader;
-import com.commongroundpublishing.rubylet.Listener;
 import com.commongroundpublishing.rubylet.Runtime;
-import com.commongroundpublishing.rubylet.Servlet;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
@@ -154,7 +152,8 @@ public class ServletTest {
     }
     
     protected ServletHolder addServlet(String appRoot, String pathSpec) throws Exception {
-        final ServletHolder holder = new ServletHolder(new Servlet());
+        final ServletHolder holder = new ServletHolder(new RestartableServlet());
+        //final ServletHolder holder = new ServletHolder(new PlainServlet());
         
         holder.setInitParameter("jrubyHome", JRUBY_HOME);
         holder.setInitParameter("appRoot", appRoot);
@@ -214,7 +213,7 @@ public class ServletTest {
     public void runsRailsApp() throws Exception {
         addServlet(APP_ROOT_RAILS_3_0_12);
         server.start();
-        
+    
         final HtmlPage page = get("/");
         
         assertEquals(200, page.getWebResponse().getStatusCode());
@@ -238,7 +237,7 @@ public class ServletTest {
     public void runsRailsAppWithListener() throws Exception {
         addServlet(APP_ROOT_RAILS_3_0_12);
         context.addEventListener(new Runtime());
-        context.addEventListener(new Listener.A());
+        context.addEventListener(new RestartableListener.A());
         context.setInitParameter("RubyListener.A.require", "./lib/test_listener");
         context.setInitParameter("RubyListener.A.rubyClass", "TestListener");
         
@@ -390,6 +389,17 @@ public class ServletTest {
     public void runsSinatraApp() throws Exception {
         addServlet(APP_ROOT_SINATRA_1_3_2, "/*");
         server.start();
+        
+        for (int i = 0; i < 1000; ++i) {
+            get("/hi");
+        }
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < 1000; ++i) {
+            get("/hi");
+        }
+        long elapsed = System.currentTimeMillis() - start;
+        System.err.println("1000 reqs @ " + (1000.0/(elapsed/1000.0)) + "req/s");
+        
 
         final HtmlPage page = get("/hi");
         

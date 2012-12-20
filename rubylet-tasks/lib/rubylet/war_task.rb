@@ -153,7 +153,7 @@ class RubyletDescriptor
     "Rubylet - #{File.basename(app_root)}"
   end
 
-  param_accessor :java_servlet_class, 'com.commongroundpublishing.rubylet.Servlet'
+  param_accessor :java_servlet_class, 'com.commongroundpublishing.rubylet.RestartableServlet'
 
   param_accessor :url_pattern, '/*'
 

@@ -20,6 +20,11 @@ public final class ChainedConfig implements IConfig {
         return chain.get(0).getServletContext();
     }
 
+    /**
+     * For each member of the chain, test if it contains a value
+     * for {@code name} and return the first, or null if none
+     * have a value.
+     */
     public String get(String name) {
         for (IConfig p : chain) {
             final String value = p.get(name);
