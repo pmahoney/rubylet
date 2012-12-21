@@ -3,6 +3,7 @@ package com.commongroundpublishing.rubylet;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -15,8 +16,8 @@ import com.commongroundpublishing.rubylet.config.ServletContextConfig;
 
 import static com.commongroundpublishing.rubylet.Util.assertNotNull;
 
-public final class RestartableServlet implements javax.servlet.Servlet, Restartable {
-
+public final class RestartableServlet implements Servlet, Restartable {
+    
     private volatile ServletConfig servletConfig;
     
     private volatile Factory factory;
