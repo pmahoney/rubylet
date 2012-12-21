@@ -1,4 +1,5 @@
 source 'http://rubygems.org'
 gem 'rubylet-tasks', :path => '../'
+gem 'rubylet-jetty', :path => '../../rubylet-jetty'
 gem 'rubylet', :path => '../../rubylet'
 gem 'rack'
