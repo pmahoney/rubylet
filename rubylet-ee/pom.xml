@@ -13,6 +13,23 @@
     object will typically be Rubylet::Servlet, which again forwards to
     a Rack application.
   </description>
+  <licenses>
+    <license>
+      <name>MIT license</name>
+      <url>http://www.opensource.org/licenses/mit-license.php</url>
+    </license>
+  </licenses>
+  <scm>
+    <url>http://github.com/commonground/rubylet</url>
+    <connection>scm:git:git@github.com:commonground/rubylet.git</connection>
+  </scm>
+  <developers>
+    <developer>
+      <id>patrick</id>
+      <name>Patrick Mahoney</name>
+      <email>patrick.mahoney@commongroundpublishing.com</email>
+    </developer>
+  </developers>
   <properties>
     <jrubyVersion>1.7.1</jrubyVersion>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
