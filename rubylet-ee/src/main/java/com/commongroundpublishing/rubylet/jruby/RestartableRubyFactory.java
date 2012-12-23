@@ -11,6 +11,9 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.commongroundpublishing.rubylet.Restartable;
 import com.commongroundpublishing.rubylet.Factory;
 import com.commongroundpublishing.rubylet.config.IConfig;
@@ -18,6 +21,8 @@ import com.commongroundpublishing.rubylet.config.IConfig;
 import static com.commongroundpublishing.rubylet.Util.assertNotNull;;
 
 public final class RestartableRubyFactory implements Factory, Restartable {
+    
+    private static final Logger logger = LoggerFactory.getLogger(RestartableRubyFactory.class);
     
     private volatile IConfig originalConfig;
     
@@ -41,6 +46,7 @@ public final class RestartableRubyFactory implements Factory, Restartable {
         factory = new RubyFactory();
         createdAt = System.currentTimeMillis();
         factory.init(config);
+        logger.info("{}: monitoring {} for restart", this, this.config.getWatchFile());
     }
     
     /**
@@ -54,13 +60,19 @@ public final class RestartableRubyFactory implements Factory, Restartable {
      * <p>FIXME: If any restartables throw exceptions, the old
      * factory will not be destroyed, and we may leak runtimes...
      */
-    public void restart() throws ServletException {
+    public void restart() {
         final Factory oldFactory = assertNotNull(factory);
         factory = null;
         init(assertNotNull(originalConfig));
         
         for (Restartable r : restartables) {
-            r.restart();
+            try {
+                r.restart();
+            } catch (ServletException e) {
+                logger.error("{}: error restarting {}",
+                             new Object[] { this, r },
+                             e);
+            }
         }
         
         oldFactory.destroy();
@@ -96,15 +108,11 @@ public final class RestartableRubyFactory implements Factory, Restartable {
      */
     public void triggerRestart() {
         if (restartToken.tryAcquire()) {
-            //log(this + ": restart triggered"); 
+            logger.info("{}: restart triggered", this); 
             final Thread t = new Thread(new Runnable() {
                 public void run() {
                     try {
-                        try {
-                            restart();
-                        } catch (ServletException e) {
-                            throw new RuntimeException(e);
-                        }
+                        restart();
                     } finally {
                         restartToken.release();
                     }

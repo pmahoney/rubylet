@@ -1,5 +1,7 @@
 module RubyletHelper
   class << self
+    # @param [com.commongroundpublishing.rubylet.jruby.RubyConfig] config
+    # @param [org.slf4j.Logger] logger
     def boot(config, logger)
       config.env.each do |key,value|
         ENV[key] = value
@@ -23,10 +25,9 @@ module RubyletHelper
 
         require 'rubygems'
         require 'bundler/setup'
-        logger.log "setup bundler with gemfile=%s without=%s" % [
-          config.bundle_gemfile,
-          config.bundle_without
-        ]
+        logger.info("setup bundler with gemfile={} without={}",
+                    config.bundle_gemfile,
+                    config.bundle_without)
 
         # Restore any gems we want available in spite of bundle exec
         gems_paths.each { |p| $LOAD_PATH.push p }

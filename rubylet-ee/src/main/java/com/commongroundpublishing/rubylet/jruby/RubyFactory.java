@@ -6,6 +6,8 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 
 import org.jruby.embed.ScriptingContainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.commongroundpublishing.rubylet.Restartable;
 import com.commongroundpublishing.rubylet.Factory;
@@ -14,6 +16,8 @@ import com.commongroundpublishing.rubylet.config.IConfig;
 import static com.commongroundpublishing.rubylet.Util.assertNotNull;
 
 public final class RubyFactory implements Factory {
+    
+    private static final Logger logger = LoggerFactory.getLogger(RubyFactory.class);
     
     private RubyConfig config;
     
@@ -35,11 +39,13 @@ public final class RubyFactory implements Factory {
     public void destroy() {
         helper = null;
         getContainer().terminate();
+        logger.info("destroyed JRuby runtime: {}", getContainer());
         container = null;
     }
     
     private void initContainer() {
         container = makeContainer(getConfig());
+        logger.info("new JRuby runtime: {}", container);
         container.runScriptlet("require 'rubylet_helper'");
         helper = container.runScriptlet("RubyletHelper");
         boot();
@@ -89,15 +95,14 @@ public final class RubyFactory implements Factory {
     }
 
     public void boot() {
-        final Object[] args = new Object[] {
-                getConfig(),
-                getConfig().getServletContext()
-        };
+        final Object[] args = new Object[] { getConfig(), logger };
         callHelper("boot", args, Object.class); 
     }
         
     public <T> T newInstance(String rubyClass, Class<T> returnType) {
-        return callHelper("new_instance", rubyClass, returnType);
+        final T instance = callHelper("new_instance", rubyClass, returnType);
+        logger.info("new {}: {}", returnType.getSimpleName(), instance);
+        return instance;
     }
     
     /**
@@ -108,6 +113,7 @@ public final class RubyFactory implements Factory {
         final RubyConfig config = new RubyConfig(servletConfig);
         final Servlet servlet = newInstance(config.getServletClass(), Servlet.class);
         servlet.init(servletConfig);
+        logger.info("initialized servlet: {}", servlet);
         return servlet;
     }
     
