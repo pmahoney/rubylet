@@ -2,15 +2,15 @@
 <web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" version="3.0" metadata-complete="true">
   <display-name>rubylet-ee-packaged</display-name>
   <context-param>
-    <param-name>bundleExec</param-name>
+    <param-name>rubylet.bundleExec</param-name>
     <param-value>true</param-value>
   </context-param>
   <context-param>
-    <param-name>env.GEM_HOME</param-name>
+    <param-name>rubylet.env.GEM_HOME</param-name>
     <param-value>../rubygems</param-value>
   </context-param>
   <context-param>
-    <param-name>boot</param-name>
+    <param-name>rubylet.boot</param-name>
     <param-value>config/boot.rb</param-value>
   </context-param>
   <context-param>
@@ -29,7 +29,7 @@
     <servlet-name>direct-servlet</servlet-name>
     <servlet-class>com.commongroundpublishing.rubylet.RestartableServlet</servlet-class>
     <init-param>
-      <param-name>servletClass</param-name>
+      <param-name>rubylet.servletClass</param-name>
       <param-value>Demo::Servlet</param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>

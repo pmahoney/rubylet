@@ -151,44 +151,93 @@ public class RubyConfig {
      * @return JRuby home or null
      */
     public final String getJrubyHome() {
-        return get("jrubyHome", null);
+        return get("rubylet.jrubyHome", null);
     }
     
+    /**
+     * For every key starting with {@code rubylet.env.<NAME>}, make an
+     * entry in a map from {@code <NAME>} to the associated value.
+     * 
+     * <p>This map will be applied as environment variables to a new
+     * runtime during boot.
+     * 
+     * @return the configured environment map
+     */
     public final Map<String, String> getEnv() {
-        return getAllAsMap("env.");
+        return getAllAsMap("rubylet.env.");
     }
 
+    /**
+     * For every key starting with {@code rubylet.gem.<NAME>}, make an
+     * entry in a map from {@code <NAME>} to the associated value.
+     * 
+     * <p>The values must be gem names followed by an optional command
+     * and version requirement.  During runtime boot, the gems will
+     * be required via {@code rubygems} in spite of any {@code bundler}
+     * restrictions.
+     * 
+     * @return the configured environment map
+     */
     public final Map<String, String> getGems() {
-        return getAllAsMap("gem.");
+        return getAllAsMap("rubylet.gem.");
     }
     
+    /**
+     * Get the configured runtime.
+     * 
+     * @return the runtime name, or "default".
+     */
     public final String getRuntime() {
-        return get("runtime", null);
+        return get("rubylet.runtime", "default");
     }
     
+    /**
+     * Get the configured appRoot.  If none is configured, attempt to detect
+     * the path to the WEB-INF dir of an unpacked WAR file.  The appRoot will
+     * then be WEB-INF/classes, which is where Maven will put files in
+     * src/main/ruby by default. 
+     * 
+     * @return the configured appRoot, WEB-INF/classes,
+     * or null if unconfigured and the WEB-INF path could not be determined
+     */
     public final String getAppRoot() {
         final String webInfPath = getWebInfPath();
         if (webInfPath == null) {
-            return getRequired("appRoot");
+            return getRequired("rubylet.appRoot");
         } else {
-            return get("appRoot", webInfPath + "/classes");
+            return get("rubylet.appRoot", webInfPath + "/classes");
         }
     }
     
+    /**
+     * Get a file to monitor for changes after which restarts will be triggered.
+     * File must be relative to appRoot.
+     * 
+     * @return
+     */
     public final File getWatchFile() {
-        return new File(getAppRoot(), get("watchFile", "tmp/restart.txt"));
+        return new File(getAppRoot(), get("rubylet.watchFile", "tmp/restart.txt"));
     }
     
+    /**
+     * @return true if bundle exec was configured.
+     */
     public final boolean isBundleExec() {
-        return Boolean.parseBoolean(get("bundleExec", null));
+        return Boolean.parseBoolean(get("rubylet.bundleExec", null));
     }
     
+    /**
+     * @return the configured gemfile, or "Gemfile"
+     */
     public final String getBundleGemfile() {
-        return get("bundleGemfile", "Gemfile");
+        return get("rubylet.bundleGemfile", "Gemfile");
     }
-    
+
+    /**
+     * @return the configured bundle "without" values, or "development:test"
+     */
     public final String getBundleWithout() {
-        return get("bundleWithout", "development:test");
+        return get("rubylet.bundleWithout", "development:test");
     }
     
     /**
@@ -200,34 +249,48 @@ public class RubyConfig {
      * and then used by rubylet/servlet, for example to set {@code
      * ActionController::Base.config.relative_url_root} in a Rails app.
      * 
+     * <p>FIXME: is this used anywhere?
+     * 
      * @return
      */
     public final String getServletPath() {
         return get("servletPath", null);
     }
     
+    /**
+     * @return the configured boot file, which should be relative to appRoot
+     */
     public final String getBoot() {
-        return get("boot", "rubylet/servlet");
+        return get("rubylet.boot", null);
     }
     
+    /**
+     * @return the configured Ruby class to instantiate as {@link javax.servlet.Servlet}
+     */
     public final String getServletClass() {
-        return get("servletClass", "Rubylet::Servlet");
+        return get("rubylet.servletClass", "Rubylet::Servlet");
     }
 
+    /**
+     * @return the configured Ruby class to instantiate as {@link javax.servlet.ServletContextListener}
+     */
     public final String getListenerClass() {
-        return getRequired("listenerClass");
+        return getRequired("rubylet.listenerClass");
     }
 
+    /**
+     * @return the configured LocalContextScope, or {@code LocalContextScope.THREADSAFE}
+     */
     public final LocalContextScope getScope() {
-        return getEnum("localContextScope", LocalContextScope.THREADSAFE);
+        return getEnum("rubylet.localContextScope", LocalContextScope.THREADSAFE);
     }
 
     public final CompileMode getCompileMode() {
-        return getEnum("compileMode", CompileMode.JIT);
+        return getEnum("rubylet.compileMode", CompileMode.JIT);
     }
 
     public final CompatVersion getCompatVersion() {
-        return getEnum("compatVersion", CompatVersion.RUBY1_9);
+        return getEnum("rubylet.compatVersion", CompatVersion.RUBY1_9);
     }
     
 }
