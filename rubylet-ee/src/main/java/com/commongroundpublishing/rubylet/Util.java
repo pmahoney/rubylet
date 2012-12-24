@@ -16,7 +16,9 @@ public class Util {
 
     public static final String RUBY_FACTORY =
             "com.commongroundpublishing.rubylet.jruby.RubyFactory";
-
+    
+    public static final String RUNTIME_KEY = "rubylet.runtime";
+    
     /**
      * Load the class {@code className} using {@link Class#forName(String)}.
      * Instantiate an object of that class using the no-arg constructor.
@@ -69,36 +71,40 @@ public class Util {
     
 
     /**
-     * Get the factory based on the servlet config.
+     * Get the factory based on the servlet config.  Will use the default factory
+     * (created if necessary) if no factory is configured.
      * 
      * @param config
      * @param className
      * @return
      */
     public static Factory getFactory(IConfig config, String className) {
-        if ("true".equals(config.get("rubylet.uniqueContainer"))) {
-            return makeFactory(config, className);
+        final String attributeKey;
+        final String configuredRuntime = config.get(RUNTIME_KEY);
+        if (configuredRuntime != null) {
+            attributeKey = RUNTIME_KEY + "." + configuredRuntime;
         } else {
-            final ServletContext context = config.getServletContext();
-            
-            // TODO: are webapp parts are started in parallel?
-            synchronized (context) {
-                Factory factory = (Factory)
-                        context.getAttribute("RubyServletFactory");
-                if (factory == null) {
-                    factory = makeFactory(config, className);
-                    context.setAttribute("RubyServletFactory", factory);
-                } else {
-                    logger.info("reusing factory from servlet context: {}", factory);
-                }
-                return factory;
+            attributeKey = RUNTIME_KEY + ".default";
+        }
+
+        final ServletContext context = config.getServletContext();
+        
+        // TODO: are webapp parts are started in parallel?
+        synchronized (context) {
+            Factory factory = (Factory) context.getAttribute(attributeKey);
+            if (factory == null) {
+                logger.info("making runtime: {}", attributeKey);
+                factory = makeFactory(config, className);
+                context.setAttribute(attributeKey, factory);
+            } else {
+                logger.info("reusing runtime {}", attributeKey);
             }
+            return factory;
         }
     }
     
     private static Factory makeFactory(IConfig config, String className) {
         final Factory factory = loadInstance(className, Factory.class);
-        logger.info("new factory: {}", factory);
         factory.init(config);
         return factory;
     }
