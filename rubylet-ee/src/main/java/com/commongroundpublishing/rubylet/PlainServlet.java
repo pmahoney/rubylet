@@ -2,6 +2,7 @@ package com.commongroundpublishing.rubylet;
 
 import java.io.IOException;
 
+import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -14,7 +15,7 @@ import com.commongroundpublishing.rubylet.config.ServletContextConfig;
 
 import static com.commongroundpublishing.rubylet.Util.assertNotNull;
 
-public final class PlainServlet implements javax.servlet.Servlet {
+public final class PlainServlet implements Servlet {
 
     private ServletConfig servletConfig;
     
@@ -28,6 +29,7 @@ public final class PlainServlet implements javax.servlet.Servlet {
                 new ChainedConfig(new ServletConfigConfig(servletConfig),
                                   new ServletContextConfig(servletConfig.getServletContext()));
         factory = Util.getFactory(config, Util.RUBY_FACTORY);
+        factory.reference(this);
         child = factory.makeServlet(servletConfig);
     }
 
@@ -56,7 +58,7 @@ public final class PlainServlet implements javax.servlet.Servlet {
     public void destroy() {
         getChild().destroy();
         child = null;
-        getFactory().destroy();
+        getFactory().unreference(this);
         factory = null;
         servletConfig = null;
     }

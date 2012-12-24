@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
@@ -30,6 +31,8 @@ public final class RestartableRubyFactory implements Factory, Restartable {
     
     private volatile Factory factory;
     
+    private AtomicInteger refCount = new AtomicInteger(0);
+    
     /**
      * Creation time of the factory.
      */
@@ -44,6 +47,7 @@ public final class RestartableRubyFactory implements Factory, Restartable {
         originalConfig = config;
         this.config = new RubyConfig(config);
         factory = new RubyFactory();
+        factory.reference(this);
         createdAt = System.currentTimeMillis();
         factory.init(config);
         logger.info("{}: monitoring {} for restart", this, this.config.getWatchFile());
@@ -75,11 +79,11 @@ public final class RestartableRubyFactory implements Factory, Restartable {
             }
         }
         
-        oldFactory.destroy();
+        oldFactory.unreference(this);  // find unref destroys factory
     }
 
     public void destroy() {
-        getFactory().destroy();
+        getFactory().unreference(this);
         factory = null;
     }
     
@@ -140,12 +144,28 @@ public final class RestartableRubyFactory implements Factory, Restartable {
         }
     }
     
-    public void register(Restartable r) {
-        restartables.add(r);
+    /**
+     * Reference this factory and, if an instance of Restartable,
+     * register for restart events.
+     */
+    public void reference(Object o) {
+        refCount.incrementAndGet();
+        if (o instanceof Restartable) {
+            restartables.add((Restartable) o);
+        }
     }
-    
-    public void unregister(Restartable r) {
-        restartables.remove(r);
+
+   /**
+    * Unreference this factory and, if an instance of Restartable,
+    * unregister for restart events.
+    */
+    public void unreference(Object o) {
+        if (o instanceof Restartable) {
+            restartables.remove((Restartable) o);
+        }
+        if (refCount.decrementAndGet() <= 0) {
+            factory.unreference(this);
+        }
     }
 
 }

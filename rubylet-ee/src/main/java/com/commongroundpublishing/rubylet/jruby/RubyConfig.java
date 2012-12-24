@@ -37,7 +37,7 @@ public class RubyConfig {
      * Get the path the the WEB-INF folder by assuming
      * "rubylet_helper.rb" can be found on the
      * classpath as a resource inside a JAR file (i.e.
-     * rubylet.jar).
+     * rubylet-ee.jar).
      * 
      * @return
      */
@@ -147,6 +147,9 @@ public class RubyConfig {
         return Collections.unmodifiableMap(map);
     }
     
+    /**
+     * @return JRuby home or null
+     */
     public final String getJrubyHome() {
         return get("jrubyHome", null);
     }
@@ -168,7 +171,7 @@ public class RubyConfig {
         if (webInfPath == null) {
             return getRequired("appRoot");
         } else {
-            return get("appRoot", webInfPath);
+            return get("appRoot", webInfPath + "/classes");
         }
     }
     

@@ -1,5 +1,7 @@
 package com.commongroundpublishing.rubylet.jruby;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContextListener;
@@ -21,6 +23,8 @@ public final class RubyFactory implements Factory {
     
     private RubyConfig config;
     
+    private AtomicInteger refCount = new AtomicInteger(0);
+    
     /**
      * The underlying ScriptingContainer (JRuby runtime)
      */
@@ -38,8 +42,8 @@ public final class RubyFactory implements Factory {
 
     public void destroy() {
         helper = null;
+        logger.info("destroying JRuby runtime: {}", getContainer());
         getContainer().terminate();
-        logger.info("destroyed JRuby runtime: {}", getContainer());
         container = null;
     }
     
@@ -47,7 +51,7 @@ public final class RubyFactory implements Factory {
         container = makeContainer(getConfig());
         logger.info("new JRuby runtime: {}", container);
         container.runScriptlet("require 'rubylet_helper'");
-        helper = container.runScriptlet("RubyletHelper");
+        helper = container.runScriptlet("RubyletHelper.new");
         boot();
     }
     
@@ -77,11 +81,22 @@ public final class RubyFactory implements Factory {
         final ScriptingContainer container = new ScriptingContainer(config.getScope());
         
         container.setCompileMode(config.getCompileMode());
-        container.setHomeDirectory(config.getJrubyHome());
+        if (config.getJrubyHome() != null) {
+            container.setHomeDirectory(config.getJrubyHome());
+        }
         container.setCompatVersion(config.getCompatVersion());
         container.setCurrentDirectory(config.getAppRoot());
         // don't propagate ENV to global JVM level
         container.getProvider().getRubyInstanceConfig().setUpdateNativeENVEnabled(false);
+        
+        logger.info("new ScriptingContainer scope={} compileMode={} jrubyHome={} compatVersion={}, pwd={}",
+                    new Object[] {
+                        config.getScope(),
+                        config.getCompileMode(),
+                        config.getJrubyHome(),
+                        config.getCompatVersion(),
+                        config.getAppRoot()
+                     });
         
         return container;
     }
@@ -95,13 +110,12 @@ public final class RubyFactory implements Factory {
     }
 
     public void boot() {
-        final Object[] args = new Object[] { getConfig(), logger };
-        callHelper("boot", args, Object.class); 
+        callHelper("boot", getConfig(), Object.class); 
     }
         
     public <T> T newInstance(String rubyClass, Class<T> returnType) {
         final T instance = callHelper("new_instance", rubyClass, returnType);
-        logger.info("new {}: {}", returnType.getSimpleName(), instance);
+        logger.info("new {}: {}", returnType, instance);
         return instance;
     }
     
@@ -127,18 +141,14 @@ public final class RubyFactory implements Factory {
      */
     public void checkRestart() {}
     
-    /**
-     * No-op because this factory is not restartable.
-     * 
-     * @param r
-     */
-    public void register(Restartable r) {}
+    public void reference(Object o) {
+        refCount.incrementAndGet();
+    }
 
-    /**
-     * No-op because this factory is not restartable.
-     * 
-     * @param r
-     */
-    public void unregister(Restartable r) {}
+    public void unreference(Object o) {
+        if (refCount.decrementAndGet() <= 0) {
+            destroy();
+        }
+    }
 
 }

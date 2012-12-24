@@ -41,6 +41,7 @@ public abstract class RestartableListener implements ServletContextListener, Res
 
         this.sce = sce;
         factory = Util.getFactory(config, Util.RESTARTABLE_RUBY_FACTORY);
+        factory.reference(this);
         child = factory.makeListener(listenerConfig);
         
         child.contextInitialized(sce);
@@ -60,7 +61,7 @@ public abstract class RestartableListener implements ServletContextListener, Res
         assertNotNull(this, child).contextDestroyed(sce);
         child = null;
         this.sce = null;
-        factory.destroy();
+        factory.unreference(this);
         factory = null;
         listenerConfig = null;
     }

@@ -32,7 +32,7 @@ public final class RestartableServlet implements Servlet, Restartable {
                 new ChainedConfig(new ServletConfigConfig(servletConfig),
                                   new ServletContextConfig(servletConfig.getServletContext()));
         factory = Util.getFactory(config, Util.RESTARTABLE_RUBY_FACTORY);
-        factory.register(this);
+        factory.reference(this);
         childServlet.set(factory.makeServlet(servletConfig));
     }
     
@@ -66,7 +66,7 @@ public final class RestartableServlet implements Servlet, Restartable {
 
     public void destroy() {
         assertNotNull(childServlet.getAndSet(null)).destroy();
-        getFactory().destroy();
+        getFactory().unreference(this);
         factory = null;
         servletConfig = null;
     }

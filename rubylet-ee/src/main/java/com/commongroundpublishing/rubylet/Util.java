@@ -1,11 +1,15 @@
 package com.commongroundpublishing.rubylet;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.commongroundpublishing.rubylet.config.IConfig;
 
 public class Util {
+    
+    private static final Logger logger = LoggerFactory.getLogger(Util.class);
     
     public static final String RESTARTABLE_RUBY_FACTORY =
             "com.commongroundpublishing.rubylet.jruby.RestartableRubyFactory";
@@ -84,6 +88,8 @@ public class Util {
                 if (factory == null) {
                     factory = makeFactory(config, className);
                     context.setAttribute("RubyServletFactory", factory);
+                } else {
+                    logger.info("reusing factory from servlet context: {}", factory);
                 }
                 return factory;
             }
@@ -92,6 +98,7 @@ public class Util {
     
     private static Factory makeFactory(IConfig config, String className) {
         final Factory factory = loadInstance(className, Factory.class);
+        logger.info("new factory: {}", factory);
         factory.init(config);
         return factory;
     }

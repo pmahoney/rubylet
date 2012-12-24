@@ -8,10 +8,13 @@ import javax.servlet.ServletException;
 import com.commongroundpublishing.rubylet.config.IConfig;
 
 public interface Factory {
-    
+
+    /**
+     * Initialize the factory according to {@code config}.
+     * 
+     * @param config
+     */
     public void init(IConfig config);
-    
-    public void destroy();
     
     public Servlet makeServlet(ServletConfig config) throws ServletException;
     
@@ -23,16 +26,18 @@ public interface Factory {
     public void checkRestart();
 
     /**
-     * Register for restart events.
+     * Increment the refcount on this Factory.
      * 
      * @param r
      */
-    public void register(Restartable r);
+    public void reference(Object o);
     
     /**
-     * Unregister for restart events.
+     * Decrement the refcount on this factory.  If the count falls to zero,
+     * the underlying JRuby runtime will be terminated and the factory
+     * factory destroyed.
      * 
      * @param r
      */
-    public void unregister(Restartable r);
+    public void unreference(Object o);
 }
