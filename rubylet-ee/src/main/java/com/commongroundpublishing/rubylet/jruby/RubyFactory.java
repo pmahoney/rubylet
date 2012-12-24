@@ -11,7 +11,6 @@ import org.jruby.embed.ScriptingContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.commongroundpublishing.rubylet.Restartable;
 import com.commongroundpublishing.rubylet.Factory;
 import com.commongroundpublishing.rubylet.config.IConfig;
 
