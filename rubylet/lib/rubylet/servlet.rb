@@ -13,11 +13,11 @@ module Rubylet
       @servlet_config = servletConfig
       @context = servletConfig.getServletContext
       
-      rackup_file = param('rackupFile') || 'config.ru'
+      rackup_file = param('rubylet.rackupFile') || 'config.ru'
       @app, _opts = Rack::Builder.parse_file(rackup_file)
 
       if defined?(Rails) && defined?(Rails::Application) && (@app < Rails::Application)
-        servlet_path = @servlet_config.getInitParameter('servletPath')
+        servlet_path = @servlet_config.getInitParameter('rubylet.servletPath')
         relative_root = if servlet_path 
                           File.join(@context.context_path, servlet_path)
                         else

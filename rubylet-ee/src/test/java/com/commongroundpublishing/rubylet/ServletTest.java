@@ -155,14 +155,14 @@ public class ServletTest {
         final ServletHolder holder = new ServletHolder(new RestartableServlet());
         //final ServletHolder holder = new ServletHolder(new PlainServlet());
         
-        holder.setInitParameter("jrubyHome", JRUBY_HOME);
-        holder.setInitParameter("appRoot", appRoot);
-        holder.setInitParameter("bundleExec", "true");
+        holder.setInitParameter("rubylet.jrubyHome", JRUBY_HOME);
+        holder.setInitParameter("rubylet.appRoot", appRoot);
+        holder.setInitParameter("rubylet.bundleExec", "true");
 
-        context.setInitParameter("jrubyHome", JRUBY_HOME);
-        context.setInitParameter("appRoot", appRoot);
-        context.setInitParameter("bundleExec", "true");
-        context.setInitParameter("env.RAILS_ENV", "production");
+        context.setInitParameter("rubylet.jrubyHome", JRUBY_HOME);
+        context.setInitParameter("rubylet.appRoot", appRoot);
+        context.setInitParameter("rubylet.bundleExec", "true");
+        context.setInitParameter("rubylet.env.RAILS_ENV", "production");
 
         context.addServlet(holder, pathSpec);
 
@@ -329,7 +329,7 @@ public class ServletTest {
     @Test
     public void runsRailsAtSubPath() throws Exception {
         ServletHolder holder = addServlet(APP_ROOT_RAILS_3_0_12, "/subpath/*");
-        holder.setInitParameter("servletPath", "/subpath");
+        holder.setInitParameter("rubylet.servletPath", "/subpath");
         server.start();
         
         {
@@ -357,7 +357,7 @@ public class ServletTest {
     public void runsRailsAtAltContextAndSubPath() throws Exception {
         context.setContextPath("/context");
         ServletHolder holder = addServlet(APP_ROOT_RAILS_3_0_12, "/subpath/*");
-        holder.setInitParameter("servletPath", "/subpath");
+        holder.setInitParameter("rubylet.servletPath", "/subpath");
         server.start();
         
         {
@@ -390,17 +390,6 @@ public class ServletTest {
         addServlet(APP_ROOT_SINATRA_1_3_2, "/*");
         server.start();
         
-        for (int i = 0; i < 1000; ++i) {
-            get("/hi");
-        }
-        long start = System.currentTimeMillis();
-        for (int i = 0; i < 1000; ++i) {
-            get("/hi");
-        }
-        long elapsed = System.currentTimeMillis() - start;
-        System.err.println("1000 reqs @ " + (1000.0/(elapsed/1000.0)) + "req/s");
-        
-
         final HtmlPage page = get("/hi");
         
         assertEquals(200, page.getWebResponse().getStatusCode());
