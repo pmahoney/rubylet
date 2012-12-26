@@ -1,5 +1,5 @@
 rubylet-ee
-----------
+==========
 
 A Java wrapper around `rubylet` that can be deployed in a WAR file to
 a Java EE server.
@@ -18,7 +18,7 @@ a Java EE server.
 * Supports direct ruby implementations of Java Servlet API
 
 Configuration
-=============
+-------------
 
 Rubylet-ee is configured by parameters in the `web.xml` descriptor.
 Context parameters apply to all rubylet-ee instances (servlet,
@@ -67,7 +67,7 @@ be started with `bundle exec`.  Default `false`.
 true.  Default `development:test`.
 
 Rack::Servlet Configuration
-===========================
+---------------------------
 
 Additional parameters configure `Rack::Servlet` when using this
 servlet to load a Rack application.
@@ -81,7 +81,7 @@ will be directed to this servlet.  If a servlet is configured in
 ActionController::Base.config.relative_url_root may be set correctly.
 
 Example: JRuby and gems packed into WAR file
-============================================
+--------------------------------------------
 
 See `examples/demo_app` for full examples.
 
@@ -155,7 +155,7 @@ Configure `maven-war-plugin` to copy rubytems into the
           </plugin>
 
 Example: JRuby, gems, and Ruby app external to WAR file
-============================================
+-------------------------------------------------------
 
 See `examples/demo_app/src/main/webapp/WEB-INF/external-jruby-web.xml`
 for web.xml.
