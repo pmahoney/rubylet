@@ -95,8 +95,7 @@ Declare dependencies on `org.jruby:jruby-complete` and
 `com.commongroundpublishing:rubylet-ee`.
 
 One way to package everything into the WAR file is to use the
-[Torquebox Rubygems Maven Proxy
-Repository](http://rubygems-proxy.torquebox.org/)
+[Torquebox Rubygems Maven Proxy Repository](http://rubygems-proxy.torquebox.org/)
 
       <repositories>
         <repository>
