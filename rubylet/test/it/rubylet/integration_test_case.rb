@@ -59,17 +59,14 @@ module Rubylet
       # In a separate JRuby runtime, create a servlet instance.  In this
       # runtime, start a Jetty server using that servlet.
       def setup_suite
-        Dir.chdir(app_root) do
-          puts "running bundle install in #{app_root}"
-          puts '=' * 20
-          system 'bundle install'
-          puts '=' * 20
-        end
         scope = Java::OrgJrubyEmbed::LocalContextScope::THREADSAFE
         @container = Java::OrgJrubyEmbed::ScriptingContainer.new(scope)
         @container.setCurrentDirectory(app_root)
         @container.getProvider.getRubyInstanceConfig.setUpdateNativeENVEnabled(false)
         servlet = @container.runScriptlet <<-EOF
+          puts "----- bundle install in \#{Dir.pwd}"
+          system 'bundle install'
+          puts "----- end bundle install"
           ENV['BUNDLE_GEMFILE'] = File.join(Dir.pwd, 'Gemfile')
           ENV['BUNDLE_WITHOUT'] = 'development:test'
           require 'bundler/setup'
