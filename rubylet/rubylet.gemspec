@@ -11,6 +11,10 @@ Gem::Specification.new do |s|
                       'lib/**/*.rb',
                       'spec/**/*.rb']
 
+  s.add_dependency 'rack'
+
+  s.add_development_dependency 'mechanize'
+  s.add_development_dependency 'mini_aether'
   s.add_development_dependency 'minitest-matchers'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'version', '~> 1'

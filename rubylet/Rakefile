@@ -14,8 +14,12 @@ Rake::TestTask.new(:test) do |t|
   t.pattern = 'spec/**/*_spec.rb'
   t.libs.push 'spec'
 end
-
 task :spec => :test
+
+Rake::TestTask.new(:integration) do |t|
+  t.pattern = 'test/it/**/*_it.rb'
+  t.libs.push 'test/it'
+end
 
 Rake::VersionTask.new
 
