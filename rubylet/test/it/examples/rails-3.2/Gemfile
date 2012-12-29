@@ -3,3 +3,6 @@ gem 'rubylet', :path => '../../../..', :require => false
 gem 'rails', '~> 3.2.0'
 gem 'jruby-openssl'
 gem 'json'
+
+# used for development
+gem 'rubylet-jetty', :path => '../../../../../rubylet-jetty', :require => false
