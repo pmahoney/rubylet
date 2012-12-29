@@ -130,6 +130,7 @@ class Rubylet::Environment < Hash
     self['SERVER_PROTOCOL']   = req.getProtocol
     self['SERVER_SOFTWARE']   = context.getServerInfo
 
+    self['java.servlet_request'] = req
     self['java.context_path'] = req.getContextPath
     self['java.path_info']    = req.getPathInfo
     self['java.servlet_path'] = req.getServletPath
