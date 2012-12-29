@@ -18,19 +18,32 @@ module Rubylet
     end
 
     def get(uri, *args)
-      agent.get("http://localhost:#{port}/#{uri}", *args)
+      resp = agent.get("http://localhost:#{port}/#{uri}", *args)
+
+      if elem = resp.at('head meta[name="csrf-param"]')
+        @csrf_param = elem['content']
+      end
+
+      if elem = resp.at('head meta[name="csrf-token"]')
+        @csrf_token = elem['content']
+      end
+
+      resp
     end
 
     def put(uri, *args)
       agent.put("http://localhost:#{port}/#{uri}", *args)
     end
 
-    def post(uri, *args)
-      agent.post("http://localhost:#{port}/#{uri}", *args)
+    def post(uri, query, headers={})
+      if @csrf_param && @csrf_token
+        query[@csrf_param] = @csrf_token
+      end
+      agent.post("http://localhost:#{port}/#{uri}", query, headers)
     end
 
     def agent
-      @agent ||= Mechanize.new
+      self.class.agent
     end
 
     module ClassMethods
@@ -41,6 +54,7 @@ module Rubylet
       ExecutorThreadPool = Java::OrgEclipseJettyUtilThread::ExecutorThreadPool
       DefaultServlet = Java::OrgEclipseJettyServlet::DefaultServlet
 
+      attr_reader :agent
       attr_writer :app_root
       attr_writer :port
 
@@ -59,6 +73,8 @@ module Rubylet
       # In a separate JRuby runtime, create a servlet instance.  In this
       # runtime, start a Jetty server using that servlet.
       def setup_suite
+        @agent = Mechanize.new
+
         scope = Java::OrgJrubyEmbed::LocalContextScope::THREADSAFE
         @container = Java::OrgJrubyEmbed::ScriptingContainer.new(scope)
         @container.setCurrentDirectory(app_root)
@@ -99,27 +115,27 @@ module Rubylet
     end
 
     def test_simple_get
-      resp = get('/')
+      resp = get('')
       assert_equal 200, resp.code.to_i
       assert_match 'tests/index', resp.body
     end
 
     def test_store_in_session
-      resp = get('/session_values/testkey')
+      resp = get('session_values/testkey')
       assert_equal 200, resp.code.to_i
       refute_match 'testvalue', resp.body
 
       # fake 'put' for rails
-      resp = post('/session_values/testkey', :value => 'testvalue', :_method => 'put')
+      resp = post('session_values/testkey', :value => 'testvalue', :_method => 'put')
       assert_equal 200, resp.code.to_i
       
-      resp = get('/session_values/testkey')
+      resp = get('session_values/testkey')
       assert_equal 200, resp.code.to_i
       assert_match 'testvalue', resp.body
     end
 
     def test_log
-      resp = get('/tests/log')
+      resp = get('tests/log')
       assert_equal 200, resp.code.to_i
     end
   end

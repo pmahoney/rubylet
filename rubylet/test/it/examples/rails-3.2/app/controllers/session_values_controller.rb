@@ -4,8 +4,8 @@ class SessionValuesController < ApplicationController
   def show
     key = params[:id]
     @session_value = session[key]
-    @session_value = PP.pp(session, '')
-      logger.info @session_value
+    @session_value = PP.pp(session.to_hash, '')
+    logger.info @session_value
   end
 
   def update
@@ -13,7 +13,7 @@ class SessionValuesController < ApplicationController
     val = params[:value]
     if key && val
       session[key] = val
-      @session_value = PP.pp(session, '')
+      @session_value = PP.pp(session.to_hash, '')
       logger.info @session_value
     end
   end
