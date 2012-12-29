@@ -33,12 +33,31 @@ module Rubylet
       @javaSession.getAttributeNames.each {|key| delete(key) }
     end
 
+    # This method is not required by the Rack SPEC for session
+    # objects, but Rails calls it anyway in +actionpack (3.2.9)
+    # lib/action_dispatch/middleware/flash.rb:258:in `call'+
+    def has_key?(key)
+      !(fetch(key).nil?)
+    end
+    alias_method :include?, :has_key?
+    alias_method :key?, :has_key?
+    alias_method :member?, :has_key?
+
+    # Used by Rails but not required by Rack.
+    def destroy
+      @javaSession.invalidate
+    end
+
     def to_hash
       hash = {}
       @javaSession.getAttributeNames.each do
         |key| hash[key] = @javaSession.getAttribute(key)
       end
       hash
+    end
+
+    def inspect
+      to_hash.inspect
     end
   end
 end
