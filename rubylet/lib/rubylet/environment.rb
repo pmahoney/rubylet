@@ -107,11 +107,11 @@ class Rubylet::Environment < Hash
     self['rack.multiprocess'] = false
     self['rack.run_once']     = false
 
-    if servlet.param('useSessions')
+    if servlet.param('rubylet.useSessions')
       self['rack.session']      = Rubylet::Session.new(req)
     end
 
-    if servlet.param('userLogger')
+    if servlet.param('rubylet.useLogger')
       self['rack.logger']       = Rubylet::Logger.new(context)
     end
       
