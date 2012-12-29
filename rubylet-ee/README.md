@@ -66,10 +66,10 @@ be started with `bundle exec`.  Default `false`.
 * `rubylet.bundleWithout` The groups to exclude if `bundle exec` is
 true.  Default `development:test`.
 
-Rack::Servlet Configuration
+Rubylet::Servlet Configuration
 ---------------------------
 
-Additional parameters configure `Rack::Servlet` when using this
+Additional parameters configure `Rubylet::Servlet` when using this
 servlet to load a Rack application.
 
 * `rubylet.rackupFile` The rackup file to load.  Default `config.ru`.
