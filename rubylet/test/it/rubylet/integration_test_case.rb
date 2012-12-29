@@ -81,7 +81,7 @@ module Rubylet
         @container.getProvider.getRubyInstanceConfig.setUpdateNativeENVEnabled(false)
         servlet = @container.runScriptlet <<-EOF
           puts "----- bundle install in \#{Dir.pwd}"
-          system 'bundle install'
+          system 'bundle install --quiet'
           puts "----- end bundle install"
           ENV['BUNDLE_GEMFILE'] = File.join(Dir.pwd, 'Gemfile')
           ENV['BUNDLE_WITHOUT'] = 'development:test'
