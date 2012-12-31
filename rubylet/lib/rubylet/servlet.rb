@@ -54,7 +54,7 @@ module Rubylet
     # @param [javax.servlet.ServletResponse] resp a Java servlet response
     # assumed to be an HttpServletResponse
     def service(req, resp)
-      env = Environment.new(req, self)
+      env = Environment.new(req)
       
       catch(:async) do
         status, headers, body = app.call(env)  # may throw async
