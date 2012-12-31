@@ -9,7 +9,7 @@
   </parent>
   <groupId>com.commongroundpublishing</groupId>
   <artifactId>rubylet-ee</artifactId>
-  <version>0.2.0-SNAPSHOT</version>
+  <version>1.0.0</version>
   <packaging>jar</packaging>
   <name>RubyletEE</name>
   <url>http://github.com/commonground/rubylet</url>
