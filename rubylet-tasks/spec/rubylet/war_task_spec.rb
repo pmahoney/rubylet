@@ -39,7 +39,7 @@ module Rubylet
 
       # puts xml
       xml.must_match %r{<servlet-name>myname</servlet-name>}
-      xml.must_match %r{rubylet.Servlet</servlet-class>}
+      xml.must_match %r{rubylet.RestartableServlet</servlet-class>}
     end
 
     # it 'generate war' do
