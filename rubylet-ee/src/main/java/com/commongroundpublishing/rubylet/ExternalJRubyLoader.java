@@ -8,6 +8,9 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Checks if JRuby is available in the classpath and if not, load it from the
  * context parameter.
@@ -19,6 +22,8 @@ import javax.servlet.ServletContextListener;
  * @author Patrick Mahoney <patrick.mahoney@commongroundpublishing.com>
  */
 public class ExternalJRubyLoader implements ServletContextListener {
+    
+    private static Logger logger = LoggerFactory.getLogger(ExternalJRubyLoader.class);
     
     private boolean haveJRuby() {
         try {
@@ -55,10 +60,10 @@ public class ExternalJRubyLoader implements ServletContextListener {
         final ServletContext context = sce.getServletContext();
         
         if (haveJRuby()) {
-            context.log("using jruby available from class loader");
+            logger.info("using jruby available from class loader");
         } else {
-            final String jrubyHome = context.getInitParameter("jrubyHome");
-            context.log("using jruby @ " + jrubyHome);
+            final String jrubyHome = context.getInitParameter("rubylet.jrubyHome");
+            logger.info("using jruby @ " + jrubyHome);
             mangleClassLoader(jrubyHome);
         }
     }
