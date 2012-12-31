@@ -4,40 +4,8 @@ require 'rubygems/package_task'
 require 'uri'
 
 def gemspec
-  unless @gemspec
-    @gemspec = Gem::Specification.load('.gemspec')
-    @gemspec.files << $rubylet_jar
-  end
-
-  @gemspec
+  @gemspec ||= Gem::Specification.load('.gemspec')
 end
-
-jar_version = if gemspec.version.to_s =~ /(.*)a$/
-                "#{$1}-SNAPSHOT"
-              else
-                gemspec.version.to_s
-              end
-$rubylet_jar = "lib/rubylet-ee-#{jar_version}.jar"
-
-file $rubylet_jar do
-  # This adds a file to the gemspec and also copies rubylet jar file
-  # into lib/rubylet-VERSION.jar just before building the gem.
-  #
-  # Assume jar is in local maven repo.  Copy this in at build time
-  # rather than at runtime because we don't have any CG maven
-  # repository...
-  require 'mini_aether'
-  MiniAether.setup do
-    jar "com.commongroundpublishing:rubylet-ee:#{jar_version}"
-  end
-
-  rubylet_jar_source =
-    URI.parse($CLASSPATH.find { |e| e =~ /rubylet-ee/ }).path
-
-  FileUtils.cp rubylet_jar_source, $rubylet_jar
-end
-
-task :gem => $rubylet_jar
 
 Rake::TestTask.new(:test) do |t|
   t.pattern = 'spec/**/*_spec.rb'

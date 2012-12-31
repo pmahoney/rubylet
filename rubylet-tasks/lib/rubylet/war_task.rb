@@ -1,6 +1,7 @@
 require 'fileutils'
 require 'mini_aether'
 require 'rake/tasklib'
+require 'version'
 require 'zip/zipfilesystem'
 
 require 'rubylet/webapp_descriptor_builder'
@@ -200,6 +201,8 @@ end
 
 module Rubylet
   class WarTask < Rake::TaskLib
+    is_versioned
+
     extend ParamAccessor
     include CommonParams
 
@@ -339,9 +342,17 @@ module Rubylet
         end
 
         begin
+          # we are using ruby version number with "a" suffix as
+          # equivalent to java/maven "-SNAPSHOT"
+          ee_version = if VERSION.to_s =~ /(.*)a$/
+                         "#{$1}-SNAPSHOT"
+                       else
+                         VERSION.to_s
+                       end
+
           deps = MiniAether::Spec.new do
             group 'com.commongroundpublishing' do
-              jar 'rubylet-ee:0.2.0-SNAPSHOT'
+              jar "rubylet-ee:#{ee_version}"
               jar 'slf4j-servletcontext:1.0.0'
             end
           end.resolve
