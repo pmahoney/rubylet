@@ -15,10 +15,10 @@ Gem::Specification.new do |s|
                       'examples/**/*']
 
   s.add_dependency 'builder'
+  s.add_dependency 'mini_aether'
   s.add_dependency 'rake'
   s.add_dependency 'zip'
 
-  s.add_development_dependency 'mini_aether'
   s.add_development_dependency 'minitest'
   s.add_development_dependency 'minitest-matchers'
   s.add_development_dependency 'version'

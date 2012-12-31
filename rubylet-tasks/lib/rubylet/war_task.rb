@@ -1,4 +1,5 @@
 require 'fileutils'
+require 'mini_aether'
 require 'rake/tasklib'
 require 'zip/zipfilesystem'
 
@@ -100,20 +101,20 @@ module CommonParams
   param_accessor :local_context_scope
 
   def common_params
-    yield 'jrubyHome', jruby_home
+    yield 'rubylet.jrubyHome', jruby_home
     env.each do |key, value|
-      yield "env.#{key}", value
+      yield "rubylet.env.#{key}", value
     end
     gems.each do |(name, req)|
-      yield "gem.#{name}", req
+      yield "rubylet.gem.#{name}", req
     end
-    yield 'bundleExec', bundle_exec
-    yield 'boot', boot
-    yield 'servletClass', servlet_class
-    yield 'appRoot', app_root
-    yield 'compileMode', compile_mode
-    yield 'compatVersion', compat_version
-    yield 'localContextScope', local_context_scope
+    yield 'rubylet.bundleExec', bundle_exec
+    yield 'rubylet.boot', boot
+    yield 'rubylet.servletClass', servlet_class
+    yield 'rubylet.appRoot', app_root
+    yield 'rubylet.compileMode', compile_mode
+    yield 'rubylet.compatVersion', compat_version
+    yield 'rubylet.localContextScope', local_context_scope
   end
 end
 
@@ -148,6 +149,11 @@ end
 class RubyletDescriptor
   extend ParamAccessor
   include CommonParams
+
+  # erase the defaults on these; they will be inherited from the
+  # context params if not set explicitly
+  param_accessor :bundle_exec
+  param_accessor :app_root
 
   param_accessor :name do
     "Rubylet - #{File.basename(app_root)}"
@@ -228,8 +234,15 @@ module Rubylet
       filters << block
     end
 
+    def servlet_context_logger
+      listeners << proc do |w|
+        w.listener! 'com.commongroundpublishing.slf4j.impl.ServletContextListenerSCL'
+      end
+    end
+
     def external_jruby
       listeners << proc do |w|
+        w.listener! 'com.commongroundpublishing.slf4j.impl.ServletContextLoggerSCL'
         w.listener! 'com.commongroundpublishing.rubylet.ExternalJRubyLoader'
       end
     end
@@ -325,16 +338,35 @@ module Rubylet
           glassfish_descriptor(:target => f)
         end
 
-        container = rubylet_jar
-        z.dir.mkdir('WEB-INF/lib')
-        z.file.open("WEB-INF/lib/#{::File.basename(container)}", 'w') do |f|
-          ::File.open(container) do |input|
-            buf = ''
-            while input.read(4096, buf)
-              f.write(buf)
+        begin
+          deps = MiniAether::Spec.new do
+            group 'com.commongroundpublishing' do
+              jar 'rubylet-ee:0.2.0-SNAPSHOT'
+              jar 'slf4j-servletcontext:1.0.0'
+            end
+          end.resolve
+
+          dir = 'WEB-INF/lib'
+          z.dir.mkdir(dir)
+          deps.each do |source|
+            dest = "#{dir}/#{::File.basename(source)}"
+            z.file.open(dest, 'w') do |output|
+              ::File.open(source) { |input| copy_stream(input, output) }
             end
           end
+        rescue => e
+          raise "Error resolving dependencies: #{e}"
         end
+      end
+    end
+
+    # Bug in JRuby prevents IO.copy_stream
+    #
+    # See https://github.com/jruby/jruby/issues/437
+    def copy_stream(input, output)
+      buf = ''
+      while input.read(4096, buf)
+        output.write(buf)
       end
     end
 
