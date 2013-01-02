@@ -4,18 +4,18 @@ rubylet-ee
 A Java wrapper around `rubylet` that can be deployed in a WAR file to
 a Java EE server.
 
-* Supports WAR files with JRuby and dependent gems packaged into the WAR
-
-* Supports WAR files pointing to external JRuby and external Ruby application
+* Works in WAR files
+  * with JRuby and dependent gems packaged into the WAR
+  * with pointers to external JRuby and external Ruby application directories
 
 * Only supports threadsafe Ruby applications (does not maintain a pool
   of runtimes to emulate single-threaded app)
 
 * Supports hot (zero downtime) redeploy by monitorin `tmp/restart.txt`
 
-* Supports Rack-based web applications
-
-* Supports direct ruby implementations of Java Servlet API
+* Supports
+  * Rack-based web applications (via `Rubylet::Servlet`)
+  * Direct ruby implementations of Java Servlet API
 
 Configuration
 -------------

@@ -31,24 +31,21 @@ rubylet-ee
 A Java wrapper around `rubylet` that can be deployed in a WAR file to
 a Java EE server.
 
-* Currently only supports running an external (not in the WAR file),
-  Rack application (i.e. a typical Ruby development tree of files).
+* Works in WAR files
+  * with JRuby and dependent gems packaged into the WAR
+  * with pointers to external JRuby and external Ruby application directories
 
-* Only supports threadsafe Ruby applications.  Does not maintain a
-  pool of JRuby runtimes to emulate single-threaded processes (though
-  I'm not opposed to this feature).
+* Only supports threadsafe Ruby applications (does not maintain a pool
+  of runtimes to emulate single-threaded app)
 
-* WAR file is very small as it does not contain the Ruby application
-  or dependent gems, but JRuby, gems, and the application must be
-  installed and managed separately.
+* Supports hot (zero downtime) redeploy by monitorin `tmp/restart.txt`
 
-* Supports hot (zero downtime) redeploy by monitoring `tmp/restart.txt`.
+* Supports
+  * Rack-based web applications (via `Rubylet::Servlet`)
+  * Direct ruby implementations of Java Servlet API
 
-* Supports direct ruby implementations of the Java Servlet API
-  (typical setup will use Rubylet::Servlet to wrap a standard Rack
-  application, but this is not required).
-
-* A bit confused and in need of refactoring, documentation, tests.
+See [rubylet-ee README](https://github.com/commonground/rubylet/tree/master/rubylet-ee)
+for more details.
 
 rubylet-tasks
 =============
