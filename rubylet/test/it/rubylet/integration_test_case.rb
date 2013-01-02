@@ -80,9 +80,11 @@ module Rubylet
         @container.setCurrentDirectory(app_root)
         @container.getProvider.getRubyInstanceConfig.setUpdateNativeENVEnabled(false)
         servlet = @container.runScriptlet <<-EOF
-          puts "----- bundle install in \#{Dir.pwd}"
-          system 'bundle install --quiet'
-          puts "----- end bundle install"
+          if !File.exists?('Gemfile.lock') || (File.mtime('Gemfile') > File.mtime('Gemfile.lock'))
+            puts "----- bundle install in \#{Dir.pwd}"
+            system 'bundle install --quiet'
+            puts "----- end bundle install"
+          end
           ENV['BUNDLE_GEMFILE'] = File.join(Dir.pwd, 'Gemfile')
           ENV['BUNDLE_WITHOUT'] = 'development:test'
           require 'bundler/setup'
