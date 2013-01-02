@@ -1,6 +1,6 @@
-require 'monitor'
-
 require 'rubylet/errors'
+require 'rubylet/respond'
+require 'thread'
 
 # Rack SPEC requires an instance of Hash, but then we would have to
 # translate ahead-of-time all the expected environment keys.  This is
@@ -9,9 +9,13 @@ require 'rubylet/errors'
 # vs. lazy hash).
 class Rubylet::Environment
   include Enumerable
+  include Rubylet::Respond
 
   # Used as a 'not found' sentinel in the companion hash
   NOT_FOUND = Object.new.freeze
+
+  # rack response tuple that completes an async response
+  ASYNC_COMPLETE = [0.freeze, {}.freeze, [].freeze].freeze
 
   # keys handled by fetch_lazy and (initially) not found in @hash
   KEYS = %w(
@@ -47,6 +51,7 @@ class Rubylet::Environment
   def initialize(req)
     @req = req
     @hash = Hash.new(NOT_FOUND)
+    @lock = Mutex.new
     
     load_headers(req)
   end
@@ -75,28 +80,62 @@ class Rubylet::Environment
     no_dups == '/' ? '' : no_dups
   end
   private :clean_slashes
-  
-  # Register an async callback.  This block will be called
-  # when a Rack application calls the 'async.callback' proc.
-  #
-  # Calls to 'async.callback' will block until another
-  # thread registers a handler by calling this method.
-  def on_async_callback(&block)
-    @lock.synchronize do
-      @async_callback = block
-      @async_callback_condition.broadcast
-    end
+
+  def ensure_async_started
+    async_context
   end
 
-  def forward_to_async_callback(resp)
-    @lock.synchronize do
-      # wait until someone sets @async_callback
-      @async_callback_condition.wait_until { @async_callback }
-      # pass resp on to the callback
-      @async_callback.call(resp)
+  # @return [javax.servlet.AsyncContext]
+  def async_context
+    @lock.synchronize { @async_context ||= @req.startAsync }
+  end
+  private :async_context
+
+  # The environment key 'async.callback' must be accessed before
+  # calling this method.
+  #
+  # TODO: Rack async doesn't seem to be standardized yet... In
+  # particular, Thin provides an 'async.close' that (I think) can be
+  # used to close the response connection after streaming in data
+  # asynchronously.
+  #
+  # Currently we support calling async.callback multiple times.  The
+  # first call must provide a status and any headers.  Subsequent
+  # calls must have a status of 0.  Headers will be ignored.  The
+  # final call, which will complete the async response, must have a
+  # status of 0, an empty headers hash, and an empty body array.
+  #
+  # Example Rack application:
+  #
+  #    require 'thread'
+  #
+  #    class AsyncExample
+  #      def call(env)
+  #        cb = env['async.callback']
+  #
+  #        # commit the status and headers
+  #        cb.call [200, {'Content-Type' => 'text/plain'}, []]
+  #
+  #        Thread.new do
+  #          sleep 5                # long task, wait for message, etc.
+  #          body = ['Hello, World!']
+  #          cb.call [0, {}, body]
+  #          cb.call [0, {}, []]
+  #        end
+  #
+  #        throw :async
+  #      end
+  #    end
+  #
+  # @param [Array] resp a Rack response array of [status, headers, body]
+  def async_respond(resp)
+    if ASYNC_COMPLETE == resp
+      async_context.complete
+    else
+      respond(async_context.response, self, *resp)
     end
   end
-  private :forward_to_async_callback
+  private :async_respond
 
   def [](key)
     val = @hash[key]
@@ -185,15 +224,11 @@ class Rubylet::Environment
     when 'java.path_info'       then @req.getPathInfo
     when 'java.servlet_path'    then @req.getServletPath
 
-    # FIXME: instantiating instance vars here is not threadsafe, but
-    # perhaps needn't be
     when 'async.callback'
-      # if @req.respond_to?(:isAsyncSupported) && req.isAsyncSupported
-      @lock = Monitor.new
-      @async_callback_condition = @lock.new_cond
-      @async_callback = nil
-      method(:forward_to_async_callback)
-
+      if @req.respond_to?(:isAsyncSupported) && @req.isAsyncSupported
+        method :async_respond
+      end
+      
     else
       nil
     end
