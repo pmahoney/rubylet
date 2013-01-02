@@ -20,11 +20,11 @@ module Rubylet
     def get(uri, *args)
       resp = agent.get("http://localhost:#{port}/#{uri}", *args)
 
-      if elem = resp.at('head meta[name="csrf-param"]')
+      if resp.respond_to?(:at) && elem = resp.at('head meta[name="csrf-param"]')
         @csrf_param = elem['content']
       end
 
-      if elem = resp.at('head meta[name="csrf-token"]')
+      if resp.respond_to?(:at) && elem = resp.at('head meta[name="csrf-token"]')
         @csrf_token = elem['content']
       end
 
