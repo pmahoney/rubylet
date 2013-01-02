@@ -20,9 +20,6 @@ module Rubylet
         headers.each do |k, v|
           resp.setHeader k, v
         end
-
-        # commit the response and send the headers to the client
-        resp.flushBuffer
       end
 
       if body.respond_to? :to_path
@@ -37,16 +34,25 @@ module Rubylet
       else
         write_body(body, resp.getWriter)
       end
+
+      # Flush the buffer and commit the response.  If this is an async
+      # response, only the headers and any available body will be sent
+      # to the client.
+      resp.flushBuffer
     end
 
     # Write each part of body with writer.  Optionally transform each
-    # part with the given block.  Flush the writer after each
-    # part. Ensure body is closed if it responds to :close.
+    # part with the given block.  Ensure body is closed if it responds
+    # to :close.
+    #
+    # TODO: Currently the body is not flushed after each part.  For an
+    # async streaming response using the inside-out technique, that
+    # means each async part won't be flushed, which probably isn't
+    # desired.
     def write_body(body, writer)
       begin
         body.each do |part|
           writer.write(block_given? ? yield(part) : part)
-          writer.flush
         end
       ensure
         body.close if body.respond_to?(:close) rescue nil
