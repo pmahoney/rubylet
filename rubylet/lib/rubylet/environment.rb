@@ -81,6 +81,7 @@ class Rubylet::Environment
   end
   private :clean_slashes
 
+  # Ensure that +startAsync+ has been called on the request object.
   def ensure_async_started
     async_context
   end
@@ -130,12 +131,21 @@ class Rubylet::Environment
   # @param [Array] resp a Rack response array of [status, headers, body]
   def async_respond(resp)
     if ASYNC_COMPLETE == resp
-      async_context.complete
+      async_complete
     else
-      respond(async_context.response, self, *resp)
+      status, headers, body = resp
+      if body.respond_to? :callback
+        body.callback &method(:async_complete)
+      end
+      respond_multi(async_context.response, status, headers, body)
     end
   end
   private :async_respond
+
+  def async_complete
+    async_context.complete
+  end
+  private :async_complete
 
   def [](key)
     val = @hash[key]
