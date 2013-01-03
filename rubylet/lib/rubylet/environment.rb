@@ -56,10 +56,11 @@ class Rubylet::Environment
     @lock = Mutex.new
   end
 
+  # FIXME: not threadsafe.  should it be?
   def [](key)
     val = @hash[key]
     if NOT_FOUND.equal?(val)
-      if (name = rack2servlet(key)) && (header = @req.getHeader(name))
+      if header = load_header(key)
         header
       else
         fetch_lazy(key)
@@ -73,14 +74,36 @@ class Rubylet::Environment
     @hash[key] = value
   end
 
+  # This is not so nice, but converts the whole thing to a Hash.
+  def to_h
+    h = {}
+    each { |(k,v)| h[k] = v }
+    h
+  end
+
+  # Added for Rails 3.0.  Not needed for 3.2 (? integration tests
+  # pass), not sure about others.
+  def reverse_merge!(h)
+    @hash.reverse_merge!(h)
+    self
+  end
+
   def merge!(other)
     @hash.merge!(other)
     self
   end
 
+  def has_key?(key)
+    @hash.has_key?(key) || !(load_header(key)).nil? || !(fetch_lazy(key).nil?)
+  end
+  alias :include? :has_key?
+  alias :key? :has_key?
+  alias :member? :has_key?
+
   def each(&block)
     # go ahead and load all the headers at this point.
     # FIXME: thread safety?
+    # FIXME: overwrites any headers that have been explicitly modified
     load_headers
 
     (@hash.keys + KEYS).uniq.each do |key|
@@ -99,10 +122,25 @@ class Rubylet::Environment
 
   private
 
+  # Attempt to load a header with Rack-land name +name+.  If found,
+  # store it in the fronting hash +@hash+ and return the value.
+  #
+  # @return [String] the value of the header or nil
+  #
+  # FIXME: not threadsafe.  should this be synchronized?
+  def load_header(rname)
+    if (sname = rack2servlet(rname)) && (header = @req.getHeader(sname))
+      @hash[rname] = header
+    end
+  end
+
   # Copied from JRuby-Rack rack/handler/servlet.rb
+  #
+  # Load all the HTTP headers into the fronting hash +@hash+.
   def load_headers
-    @req.getHeaderNames.each do |name|
-      @hash[servlet2rack(name)] = @req.getHeader(name)
+    @req.getHeaderNames.each do |sname|
+      rname = servlet2rack(sname)
+      @hash[rname] = @req.getHeader(sname)
     end
   end
 
