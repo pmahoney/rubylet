@@ -210,8 +210,6 @@ class Rubylet::Environment
   end
 
   def fetch_lazy(key)
-    context = @req.servlet_context
-
     case key
     when 'REQUEST_METHOD' then @req.getMethod
   
@@ -247,7 +245,7 @@ class Rubylet::Environment
     when 'rack.input'
       @rack_input ||= @req.getInputStream.to_io
 
-    when 'rack.errors'  then Rubylet::Errors.new(context)
+    when 'rack.errors'  then Rubylet::Errors.new(@req.servlet_context)
       
     when 'REMOTE_ADDR'  then @req.getRemoteAddr
     when 'REMOTE_HOST'  then @req.getRemoteHost
@@ -261,7 +259,7 @@ class Rubylet::Environment
       @req.getRequestURL.to_s + (q ? ('?' + q) : '')
       
     when 'SERVER_PROTOCOL' then @req.getProtocol
-    when 'SERVER_SOFTWARE' then context.getServerInfo
+    when 'SERVER_SOFTWARE' then @req.servlet_context.context.getServerInfo
 
     when 'java.servlet_request' then @req
     when 'java.context_path'    then @req.getContextPath
