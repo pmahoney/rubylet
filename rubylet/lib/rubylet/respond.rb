@@ -7,11 +7,10 @@ module Rubylet
     # The body will be closed if it responds to +:close+.
     #
     # @param [java.servlet.http.HttpServletResponse] resp
-    # @param [Rubylet::Environment] env currently not used
     # @param [Fixnum] status the response status, or zero to ignore
     # @param [Hash] headers http headers that will be set
     # @param [Array] body an array-like object for iterating through the body
-    def respond(resp, env, status, headers, body)
+    def respond(resp, status, headers, body)
       respond_headers(resp, status, headers)
 
       if body.respond_to? :to_path

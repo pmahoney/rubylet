@@ -65,7 +65,7 @@ module Rubylet
 
         # status of -1 also starts :async
         unless status == -1
-          respond(resp, env, status, headers, body)
+          respond(resp, status, headers, body)
           return
         end
       end
