@@ -1,5 +1,6 @@
 require 'rubylet/errors'
 require 'rubylet/respond'
+require 'rubylet/headers_helper'
 require 'thread'
 
 # Rack SPEC requires an instance of Hash, but then we would have to
@@ -10,6 +11,7 @@ require 'thread'
 class Rubylet::Environment
   include Enumerable
   include Rubylet::Respond
+  include Rubylet::HeadersHelper
 
   # Used as a 'not found' sentinel in the companion hash
   NOT_FOUND = Object.new.freeze
@@ -52,26 +54,57 @@ class Rubylet::Environment
     @req = req
     @hash = Hash.new(NOT_FOUND)
     @lock = Mutex.new
-    
-    load_headers(req)
   end
-  
-  def normalize(raw)
-    if raw =~ /^Content-(Type|Length)$/i
-      raw
-    else
-      'HTTP_' + raw
-    end.upcase.gsub(/-/, '_')
-  end
-  private :normalize
 
-  # Copied from JRuby-Rack rack/handler/servlet.rb
-  def load_headers(req)
-    req.getHeaderNames.each do |h|
-      @hash[normalize(h)] = req.getHeader(h)
+  def [](key)
+    val = @hash[key]
+    if NOT_FOUND.equal?(val)
+      if (name = rack2servlet(key)) && (header = @req.getHeader(name))
+        header
+      else
+        fetch_lazy(key)
+      end
+    else
+      val
     end
   end
-  private :load_headers
+
+  def []=(key, value)
+    @hash[key] = value
+  end
+
+  def merge!(other)
+    @hash.merge!(other)
+    self
+  end
+
+  def each(&block)
+    # go ahead and load all the headers at this point.
+    # FIXME: thread safety?
+    load_headers
+
+    (@hash.keys + KEYS).uniq.each do |key|
+      block.call [key, self[key]]
+    end
+  end
+
+  def values_at(*keys)
+    keys.map { |k| self[k] }
+  end
+
+  # Ensure that +startAsync+ has been called on the request object.
+  def ensure_async_started
+    async_context
+  end
+
+  private
+
+  # Copied from JRuby-Rack rack/handler/servlet.rb
+  def load_headers
+    @req.getHeaderNames.each do |name|
+      @hash[servlet2rack(name)] = @req.getHeader(name)
+    end
+  end
 
   # Strip a lone slash and also reduce duplicate '/' to a single
   # slash.
@@ -79,18 +112,11 @@ class Rubylet::Environment
     no_dups = str.gsub(%r{/+}, '/')
     no_dups == '/' ? '' : no_dups
   end
-  private :clean_slashes
-
-  # Ensure that +startAsync+ has been called on the request object.
-  def ensure_async_started
-    async_context
-  end
 
   # @return [javax.servlet.AsyncContext]
   def async_context
     @lock.synchronize { @async_context ||= @req.startAsync }
   end
-  private :async_context
 
   # The environment key 'async.callback' must be accessed before
   # calling this method.
@@ -140,39 +166,9 @@ class Rubylet::Environment
       respond_multi(async_context.response, status, headers, body)
     end
   end
-  private :async_respond
 
   def async_complete
     async_context.complete
-  end
-  private :async_complete
-
-  def [](key)
-    val = @hash[key]
-    if NOT_FOUND.equal?(val)
-      fetch_lazy(key)
-    else
-      val
-    end
-  end
-
-  def []=(key, value)
-    @hash[key] = value
-  end
-
-  def merge!(other)
-    @hash.merge!(other)
-    self
-  end
-
-  def each(&block)
-    (@hash.keys + KEYS).uniq.each do |key|
-      block.call [key, self[key]]
-    end
-  end
-
-  def values_at(*keys)
-    keys.map { |k| self[k] }
   end
 
   def fetch_lazy(key)
@@ -243,5 +239,4 @@ class Rubylet::Environment
       nil
     end
   end
-  private :fetch_lazy
 end
