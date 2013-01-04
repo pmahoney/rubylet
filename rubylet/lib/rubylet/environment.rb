@@ -258,7 +258,7 @@ class Rubylet::Environment
       @req.getRequestURL.to_s + (q ? ('?' + q) : '')
       
     when 'SERVER_PROTOCOL' then @req.getProtocol
-    when 'SERVER_SOFTWARE' then @req.servlet_context.context.getServerInfo
+    when 'SERVER_SOFTWARE' then @req.servlet_context.getServerInfo
 
     when 'java.servlet_request' then @req
     when 'java.context_path'    then @req.getContextPath
