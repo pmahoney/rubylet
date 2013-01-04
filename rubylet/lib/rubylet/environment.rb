@@ -143,16 +143,6 @@ class Rubylet::Environment
     @req.getHeaderNames.map { |sname| servlet2rack(sname) }
   end
 
-  # Copied from JRuby-Rack rack/handler/servlet.rb
-  #
-  # Load all the HTTP headers into the fronting hash +@hash+.
-  def load_headers
-    @req.getHeaderNames.each do |sname|
-      rname = servlet2rack(sname)
-      @hash[rname] = @req.getHeader(sname)
-    end
-  end
-
   # Strip a lone slash and also reduce duplicate '/' to a single
   # slash.
   def clean_slashes(str)
