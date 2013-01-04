@@ -1,7 +1,17 @@
 require 'spec_helper'
 require 'rubylet/environment'
 
+module Rack
+  VERSION = '0'
+end
+
 module Rubylet
+  class FakeIO
+    def to_io
+      self
+    end
+  end
+
   # Mocks part of the HttpServletRequest api for testing
   class FakeRequest
     def initialize
@@ -16,6 +26,22 @@ module Rubylet
       'GET'
     end
 
+    def servlet_context
+      self
+    end
+
+    def context
+      self
+    end
+
+    def getServerInfo
+      'Fake Server'
+    end
+
+    def getInputStream
+      FakeIO.new
+    end
+
     def getHeader(name)
       # this is supposed to be case insensitive
       @headers[name.downcase]
@@ -23,6 +49,10 @@ module Rubylet
 
     def getHeaderNames
       @headers.keys
+    end
+
+    def method_missing(*args, &block)
+      nil
     end
   end
 
@@ -71,6 +101,13 @@ module Rubylet
 
       @env.has_key?('REQUEST_METHOD').must_equal true
       @env.has_key?('REQUEST_METHOD').must_equal true
+    end
+
+    it 'iterates over only present keys' do
+      @env.each do |(k,v)|
+        # REMOTE_ADDR is a lazy key, but nil in FakeRequest
+        k.wont_equal 'REMOTE_ADDR'
+      end
     end
 
     describe 'merge!' do

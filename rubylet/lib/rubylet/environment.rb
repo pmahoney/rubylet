@@ -94,7 +94,7 @@ class Rubylet::Environment
   end
 
   def has_key?(key)
-    @hash.has_key?(key) || !(load_header(key)).nil? || !(fetch_lazy(key).nil?)
+    @hash.has_key?(key) || !(load_header(key).nil?) || !(fetch_lazy(key).nil?)
   end
   alias :include? :has_key?
   alias :key? :has_key?
@@ -107,7 +107,13 @@ class Rubylet::Environment
     load_headers
 
     (@hash.keys + KEYS).uniq.each do |key|
-      block.call [key, self[key]]
+      val = @hash[key]
+      if NOT_FOUND.equal?(val)
+        val = fetch_lazy(key)
+        block.call [key, val] unless val.nil?
+      else
+        block.call [key, val]
+      end
     end
   end
 
