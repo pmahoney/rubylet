@@ -63,7 +63,7 @@ module Rubylet
       end
 
       def jruby_home
-        regex = %r{/lib/ruby/site_ruby.*}
+        regex = %r{/lib/.*site_ruby.*}
         $LOAD_PATH.find { |p| p =~ regex }.gsub(regex, '')
       end
 
