@@ -198,7 +198,7 @@ class Rubylet::Environment
     else
       status, headers, body = resp
       if body.respond_to? :callback
-        body.callback &method(:async_complete)
+        body.callback(&method(:async_complete))
       end
       respond_multi(async_context.response, status, headers, body)
     end
