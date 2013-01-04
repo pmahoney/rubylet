@@ -58,16 +58,7 @@ class Rubylet::Environment
 
   # FIXME: not threadsafe.  should it be?
   def [](key)
-    val = @hash[key]
-    if NOT_FOUND.equal?(val)
-      if header = load_header(key)
-        header
-      else
-        fetch_lazy(key)
-      end
-    else
-      val
-    end
+    get_value(key, nil)
   end
 
   def []=(key, value)
@@ -101,19 +92,10 @@ class Rubylet::Environment
   alias :member? :has_key?
 
   def each(&block)
-    # go ahead and load all the headers at this point.
     # FIXME: thread safety?
-    # FIXME: overwrites any headers that have been explicitly modified
-    load_headers
-
-    (@hash.keys + KEYS).uniq.each do |key|
-      val = @hash[key]
-      if NOT_FOUND.equal?(val)
-        val = fetch_lazy(key)
-        block.call [key, val] unless val.nil?
-      else
-        block.call [key, val]
-      end
+    (@hash.keys + header_keys + KEYS).uniq.each do |key|
+      val = get_value(key, NOT_FOUND)
+      yield [key,val] unless NOT_FOUND.equal?(val)
     end
   end
 
@@ -128,6 +110,23 @@ class Rubylet::Environment
 
   private
 
+  # Lookup +key+ in the fronting hash, headers, or lazy set.  Return
+  # the value (which may be nil if that was explicitly stored in the
+  # fronting hash), or +default+.
+  def get_value(key, default)
+    val = @hash[key]
+    if NOT_FOUND.equal?(val)
+      if header = load_header(key)
+        header
+      else
+        lazy = fetch_lazy(key)
+        lazy.nil? ? default : lazy
+      end
+    else
+      val
+    end
+  end
+
   # Attempt to load a header with Rack-land name +name+.  If found,
   # store it in the fronting hash +@hash+ and return the value.
   #
@@ -138,6 +137,10 @@ class Rubylet::Environment
     if (sname = rack2servlet(rname)) && (header = @req.getHeader(sname))
       @hash[rname] = header
     end
+  end
+
+  def header_keys
+    @req.getHeaderNames.map { |sname| servlet2rack(sname) }
   end
 
   # Copied from JRuby-Rack rack/handler/servlet.rb
