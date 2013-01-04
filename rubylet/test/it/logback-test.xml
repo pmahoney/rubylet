@@ -1,0 +1,11 @@
+<configuration>
+  <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+    <file>logs/integration_tests.log</file>
+    <encoder>
+      <pattern>%date %level %logger{10} %msg%n</pattern>
+    </encoder>
+  </appender>
+  <root level="INFO">
+    <appender-ref ref="FILE" />
+  </root>
+</configuration>
