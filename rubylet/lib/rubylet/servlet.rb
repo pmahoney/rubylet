@@ -15,19 +15,26 @@ module Rubylet
     def init(servletConfig)
       @servlet_config = servletConfig
       @context = servletConfig.getServletContext
+
+      # Rails changed how this is configured
+      # (ActionController::Base.relative_root=,
+      # ActionControler::Base.config.relative_root=,
+      # app.config.action_controller.relative_root=).  Hopefully
+      # setting the env var takes care of all cases.
+      #
+      # TODO: some rubylet-ee integration tests test this, but
+      # rubylet's integrations touch more versions of rails
+      ENV['RAILS_RELATIVE_URL_ROOT'] = relative_root
       
       rackup_file = param('rubylet.rackupFile') || 'config.ru'
       @app, _opts = Rack::Builder.parse_file(rackup_file)
+    end
 
-      if defined?(Rails) && defined?(Rails::Application) && (@app < Rails::Application)
-        servlet_path = @servlet_config.getInitParameter('rubylet.servletPath')
-        relative_root = if servlet_path 
-                          File.join(@context.context_path, servlet_path)
-                        else
-                          @context.context_path
-                        end
-        app.config.action_controller.relative_url_root = relative_root
-        ActionController::Base.config.relative_url_root = relative_root
+    def relative_root
+      if servlet_path = @servlet_config.getInitParameter('rubylet.servletPath')
+        File.join(@context.context_path, servlet_path)
+      else
+        @context.context_path
       end
     end
     

@@ -10,6 +10,14 @@ module Rubylet
     def to_io
       self
     end
+
+    def binmode
+      self
+    end
+
+    def set_encoding(any)
+      self
+    end
   end
 
   # Mocks part of the HttpServletRequest api for testing
@@ -105,7 +113,7 @@ module Rubylet
 
     describe 'each' do
       it 'iterates over only present keys' do
-        @env.each do |(k,v)|
+        @env.each do |k,v|
           # REMOTE_ADDR is a lazy key, but nil in FakeRequest
           k.wont_equal 'REMOTE_ADDR'
         end
@@ -114,7 +122,7 @@ module Rubylet
       it 'iterates and preserves header modifications' do
         @env['HTTP_USER_AGENT'] = 'test agent 123'
         agent = nil
-        @env.each do |(k,v)|
+        @env.each do |k,v|
           agent = v if k == 'HTTP_USER_AGENT'
         end
         agent.must_equal 'test agent 123'
@@ -123,7 +131,7 @@ module Rubylet
       it 'iterates over explicit nil' do
         @env['nil'] = nil
         val = 'not nil'
-        @env.each do |(k,v)|
+        @env.each do |k,v|
           val = v if k == 'nil'
         end
         val.must_be_nil
