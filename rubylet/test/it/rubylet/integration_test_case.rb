@@ -3,7 +3,6 @@ require 'mechanize'
 require 'mini_aether'
 
 $CLASSPATH << File.expand_path('../../', __FILE__)
-puts "#{File.expand_path('../../logback-test.xml', __FILE__)}"
 MiniAether.setup do
   jar 'org.eclipse.jetty:jetty-servlet:8.1.7.v20120910'
   jar 'ch.qos.logback:logback-classic:1.0.9'
