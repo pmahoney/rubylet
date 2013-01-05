@@ -1,0 +1,4 @@
+source :rubygems
+gem 'ramaze', '2012.12.08'
+gem 'rubylet', :path => '../../../..', :require => false
+gem 'rubylet-jetty', :path => '../../../../../rubylet-jetty', :require => false
