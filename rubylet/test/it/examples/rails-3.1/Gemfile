@@ -1,0 +1,6 @@
+source 'http://rubygems.org'
+gem 'rails', '~> 3.1.0'
+gem 'rubylet', :path => '../../../..', :require => false
+
+# used for development
+gem 'rubylet-jetty', :path => '../../../../../rubylet-jetty', :require => false
