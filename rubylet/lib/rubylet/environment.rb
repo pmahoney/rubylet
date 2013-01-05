@@ -23,7 +23,8 @@ class Rubylet::Environment < Hash
   # rack.input must use this encoding
   ASCII_8BIT = Encoding.find('ASCII-8BIT')
 
-  # Used as a 'not found' sentinel in the companion hash
+  # Used as a 'not found' sentinel in the self hash.  Also stored
+  # directly in self hash to mark as deleted.
   NOT_FOUND = Object.new.freeze
 
   # Used as default arg to #fetch, which raises error by default on not found
@@ -84,7 +85,6 @@ class Rubylet::Environment < Hash
                   :default=,
                   :default_proc,
                   :default_proc=,
-                  :delete,
                   :delete_if,
                   :eql?,
                   :flatten,
@@ -114,7 +114,6 @@ class Rubylet::Environment < Hash
   private
   alias :fetch_super :fetch
   alias :keys_super :keys
-  alias :super_get :[]
   public
 
   def [](key)
@@ -131,6 +130,16 @@ class Rubylet::Environment < Hash
 
   def default=(d)
     @default = d
+  end
+
+  def delete(key)
+    val = fetch(key, NOT_FOUND)
+    if NOT_FOUND.equal?(val)
+      default
+    else
+      self[key] = NOT_FOUND
+      val
+    end
   end
 
   # TODO: support enumerator version
@@ -174,9 +183,7 @@ class Rubylet::Environment < Hash
   # yield to the block if given.
   def fetch(key, default = RAISE_KEY_ERROR)
     val = fetch_super(key, &method(:fetch_header_or_other))
-    if !NOT_FOUND.equal?(val)
-      val
-    else
+    if NOT_FOUND.equal?(val)
       if !RAISE_KEY_ERROR.equal?(default)
         default
       elsif block_given?
@@ -184,11 +191,15 @@ class Rubylet::Environment < Hash
       else
         raise KeyError, "#{key} not found"
       end
+    else
+      val
     end
   end
 
   def has_key?(key)
-    super(key) || !NOT_FOUND.equal?(fetch_header_or_other(key))
+    # Note: can't use has_key_super? because we may have stored
+    # NOT_FOUND to mark as deleted.
+    !NOT_FOUND.equal?(fetch(key, NOT_FOUND))
   end
   alias :include? :has_key?
   alias :key? :has_key?
