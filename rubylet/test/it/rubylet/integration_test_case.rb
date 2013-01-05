@@ -53,11 +53,11 @@ module Rubylet
       agent.put(uri(path), *args)
     end
 
-    def post(uri, query, headers={})
+    def post(path, query, headers={})
       if @csrf_param && @csrf_token
         query[@csrf_param] = @csrf_token
       end
-      agent.post("http://localhost:#{port}/#{uri}", query, headers)
+      agent.post(uri(path), query, headers)
     end
 
     def agent
@@ -74,8 +74,8 @@ module Rubylet
 
       def parameters
         {
-          :context_path => ['/'],
-          :url_pattern => ['/*']
+          :context_path => ['/', '/test_app'],
+          :url_pattern => ['/*', '/sub_path/*']
         }
       end
 
@@ -89,7 +89,7 @@ module Rubylet
       end
 
       def to_s
-        File.basename(app_root)
+        "#{File.basename(app_root)} with #{params}"
       end
 
       def port

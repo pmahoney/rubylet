@@ -23,11 +23,7 @@ class RunnerWithSuiteSetupAndTeardown < MiniTest::Unit
   def test_suite_header(suite)
     prefix = "\n" if @not_first
     @not_first = true
-    if suite.respond_to? :params
-      "#{prefix}running #{suite} with #{suite.params}"
-    else
-      "#{prefix}running #{suite}"
-    end
+    "#{prefix}running #{suite}"
   end
 
   def _run_suite(suite, type)
