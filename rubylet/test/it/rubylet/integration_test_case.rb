@@ -107,7 +107,9 @@ module Rubylet
         @agent = Mechanize.new
 
         scope = Java::OrgJrubyEmbed::LocalContextScope::THREADSAFE
+        mode = Java::OrgJruby::RubyInstanceConfig::CompileMode::OFF
         @container = Java::OrgJrubyEmbed::ScriptingContainer.new(scope)
+        @container.setCompileMode(mode) # for short lived tests, no-compile is faster
         @container.setCurrentDirectory(app_root)
         @container.getProvider.getRubyInstanceConfig.setUpdateNativeENVEnabled(false)
         servlet = @container.runScriptlet <<-EOF
