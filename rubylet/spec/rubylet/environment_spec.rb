@@ -10,6 +10,14 @@ module Rubylet
     def to_io
       self
     end
+
+    def binmode
+      self
+    end
+
+    def set_encoding(any)
+      self
+    end
   end
 
   # Mocks part of the HttpServletRequest api for testing

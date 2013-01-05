@@ -20,6 +20,9 @@ class Rubylet::Environment < Hash
   include Rubylet::Respond
   include Rubylet::HeadersHelper
 
+  # rack.input must use this encoding
+  ASCII_8BIT = Encoding.find('ASCII-8BIT')
+
   # Used as a 'not found' sentinel in the companion hash
   NOT_FOUND = Object.new.freeze
 
@@ -376,7 +379,12 @@ class Rubylet::Environment < Hash
     #
     # @see http://rack.rubyforge.org/doc/SPEC.html
     when 'rack.input'
-      @rack_input ||= @req.getInputStream.to_io
+      # Store in self hash because we can only call #to_io once.
+      # Don't need an instance var because once it's in the hash,
+      # should never fall through to fetch_other
+      io = @req.getInputStream.to_io.binmode
+      io.set_encoding(ASCII_8BIT)
+      self['rack.input'] = io
 
     when 'rack.errors'  then Rubylet::Errors.new(@req.servlet_context)
       
