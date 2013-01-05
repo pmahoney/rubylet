@@ -11,7 +11,6 @@ end
 module Rubylet
   module IntegrationTestCase
     def self.included(mod)
-      "extending #{mod}"
       mod.extend ClassMethods
     end
 
@@ -19,8 +18,25 @@ module Rubylet
       self.class.port
     end
 
-    def get(uri, *args)
-      resp = agent.get("http://localhost:#{port}/#{uri}", *args)
+    def params
+      self.class.params
+    end
+
+    def uri(path)
+      # assume url_pattern is <something>/*
+      pattern = if params[:url_pattern] =~ /^(.*)\/\*/
+                  $1
+                else
+                  ''
+                end
+      File.join("http://localhost:#{port}",
+                params[:context_path],
+                pattern,
+                path)
+    end
+
+    def get(path, *args)
+      resp = agent.get(uri(path))
 
       if resp.respond_to?(:at) && elem = resp.at('head meta[name="csrf-param"]')
         @csrf_param = elem['content']
@@ -33,8 +49,8 @@ module Rubylet
       resp
     end
 
-    def put(uri, *args)
-      agent.put("http://localhost:#{port}/#{uri}", *args)
+    def put(path, *args)
+      agent.put(uri(path), *args)
     end
 
     def post(uri, query, headers={})
@@ -56,12 +72,24 @@ module Rubylet
       ExecutorThreadPool = Java::OrgEclipseJettyUtilThread::ExecutorThreadPool
       DefaultServlet = Java::OrgEclipseJettyServlet::DefaultServlet
 
+      def parameters
+        {
+          :context_path => ['/'],
+          :url_pattern => ['/*']
+        }
+      end
+
+      attr_reader :params
       attr_reader :agent
       attr_writer :app_root
       attr_writer :port
 
       def app_root
         @app_root || raise("set this in #{self} to point to app root")
+      end
+
+      def to_s
+        File.basename(app_root)
       end
 
       def port
@@ -74,9 +102,8 @@ module Rubylet
 
       # In a separate JRuby runtime, create a servlet instance.  In this
       # runtime, start a Jetty server using that servlet.
-      def setup_suite
-        puts; puts "setting up #{app_root}"
-
+      def setup_suite(params)
+        @params = params
         @agent = Mechanize.new
 
         scope = Java::OrgJrubyEmbed::LocalContextScope::THREADSAFE
@@ -99,11 +126,11 @@ module Rubylet
 
         # we have the servlet; now setup jetty
         context = ServletContextHandler.new(ServletContextHandler::SESSIONS)
-        context.setContextPath('/')
+        context.setContextPath(params[:context_path])
 
         holder = ServletHolder.new(servlet)
         holder.setInitParameter 'rubylet.appRoot', app_root
-        context.addServlet holder, '/*'
+        context.addServlet holder, params[:url_pattern]
 
         @server = Server.new(port)
         @server.setHandler(context)
