@@ -3,12 +3,19 @@ require 'rubylet/respond'
 require 'rubylet/headers_helper'
 require 'thread'
 
-# Rack SPEC requires an instance of Hash, but then we would have to
-# translate ahead-of-time all the expected environment keys.  This is
-# slow, so we violate the Rack spec to have a lazy hash-like object.
-# (One simple benchmark saw 3000 vs. 4300 req/s for eager hash
+# Rack SPEC requires an instance of Hash, which we extend and then
+# implement lazy-loading of the environment because loading
+# ahead-of-time all the expected environment keys is slow.
+#
+# There are three levels here: the hash itself, the HTTP headers, and
+# the other environment keys.  These are referred to as 'self' or
+# 'super', 'headers', and 'other'.
+#
+# Getting and putting values is not threadsafe.
+#
+# (One simple benchmark saw 3000 vs. 10000 req/s for eager hash
 # vs. lazy hash).
-class Rubylet::Environment
+class Rubylet::Environment < Hash
   include Enumerable
   include Rubylet::Respond
   include Rubylet::HeadersHelper
@@ -16,11 +23,14 @@ class Rubylet::Environment
   # Used as a 'not found' sentinel in the companion hash
   NOT_FOUND = Object.new.freeze
 
+  # Used as default arg to #fetch, which raises error by default on not found
+  RAISE_KEY_ERROR = Object.new.freeze
+
   # rack response tuple that completes an async response
   ASYNC_COMPLETE = [0.freeze, {}.freeze, [].freeze].freeze
 
-  # keys handled by fetch_lazy and (initially) not found in @hash
-  KEYS = %w(
+  # keys handled by fetch_other and (initially) not found in @hash
+  KEYS_OTHER = %w(
     REQUEST_METHOD
     SCRIPT_NAME
     rack.version
@@ -52,56 +62,183 @@ class Rubylet::Environment
   # @param [javax.servlet.http.HttpServletRequest] req
   def initialize(req)
     @req = req
-    @hash = Hash.new(NOT_FOUND)
     @lock = Mutex.new
   end
 
-  # FIXME: not threadsafe.  should it be?
+  def self.not_implemented(*syms)
+    syms.each do |sym|
+      define_method(sym) do |*args, &block|
+        raise NotImplementedError
+      end
+    end
+  end
+
+  # not implemented
+  not_implemented(:assoc,
+                  :clear,
+                  :compare_by_identity,
+                  :default,
+                  :default=,
+                  :default_proc,
+                  :default_proc=,
+                  :delete,
+                  :delete_if,
+                  :eql?,
+                  :flatten,
+                  :has_value?,
+                  :hash,
+                  :initialize_copy,
+                  :keep_if,
+                  :key,
+                  :rassoc,
+                  :reject,
+                  :reject!,
+                  :replace,
+                  :select!,
+                  :shift,
+                  :value?)
+
+  # methods not overridden, used as-is from super class
+  #
+  # []=
+  # reverse_merge! (Rails 3.0 monkeypatch)
+  # merge!
+  # rehash (?)
+  # store
+  # update
+
+  # super methods we need to be able to call
+  private
+  alias :fetch_super :fetch
+  alias :keys_super :keys
+  alias :super_get :[]
+  public
+
   def [](key)
-    get_value(key, nil)
+    fetch(key, @default)
   end
 
-  def []=(key, value)
-    @hash[key] = value
+  def compare_by_identity
+    false
   end
 
-  # This is not so nice, but converts the whole thing to a Hash.
-  def to_h
-    h = {}
-    each { |(k,v)| h[k] = v }
-    h
+  def default(key = nil)
+    @default
   end
 
-  # Added for Rails 3.0.  Not needed for 3.2 (? integration tests
-  # pass), not sure about others.
-  def reverse_merge!(h)
-    @hash.reverse_merge!(h)
-    self
+  def default=(d)
+    @default = d
   end
 
-  def merge!(other)
-    @hash.merge!(other)
-    self
+  # TODO: support enumerator version
+  def each
+    raise NotImplementedError unless block_given?
+
+    keys.each do |key|
+      val = fetch(key, NOT_FOUND)
+      yield(key,val) unless NOT_FOUND.equal?(val)
+    end
+  end
+  alias :each_pair :each
+
+  # TODO: support enumerator version
+  def each_key(&block)
+    raise NotImplementedError unless block_given?
+    keys.each(&block)
+  end
+
+  def each_value(&block)
+    to_hash.each_value(&block)
+  end
+
+  # There's always at least 'rack.version', and we don't support
+  # delete.
+  def empty?
+    false
+  end
+
+  # TODO: is this correct?
+  def eql?(other)
+    other.to_hash == to_hash
+  end
+  alias :== :eql?
+
+  # Lookup +key+ in the self hash, headers, or other set.  Return
+  # the value (which may be nil if that was explicitly stored in the
+  # fronting hash).
+  #
+  # If not found, raise KeyError, or return +default+ if given, or
+  # yield to the block if given.
+  def fetch(key, default = RAISE_KEY_ERROR)
+    val = fetch_super(key, &method(:fetch_header_or_other))
+    if !NOT_FOUND.equal?(val)
+      val
+    else
+      if !RAISE_KEY_ERROR.equal?(default)
+        default
+      elsif block_given?
+        yield(key)
+      else
+        raise KeyError, "#{key} not found"
+      end
+    end
   end
 
   def has_key?(key)
-    @hash.has_key?(key) || !(load_header(key).nil?) || !(fetch_lazy(key).nil?)
+    super(key) || !NOT_FOUND.equal?(fetch_header_or_other(key))
   end
   alias :include? :has_key?
   alias :key? :has_key?
   alias :member? :has_key?
 
-  def each(&block)
-    # FIXME: thread safety?
-    (@hash.keys + header_keys + KEYS).uniq.each do |key|
-      val = get_value(key, NOT_FOUND)
-      yield [key,val] unless NOT_FOUND.equal?(val)
-    end
+  def inspect
+    to_hash.inspect
+  end
+  alias :to_s :inspect
+
+  def invert
+    to_hash.invert
+  end
+
+  def keys
+    (keys_super + keys_headers + KEYS_OTHER).uniq
+  end
+
+  def length
+    keys.length  # somewhat less efficient than one might expect
+  end
+  alias :size :length
+
+  def merge(other, &block)
+    to_hash.merge(other, &block)
+  end
+
+  def select(&block)
+    to_hash.select(&block)
+  end
+
+  def to_a
+    a = []
+    each { |k,v| a << [k,v] }
+    a
+  end
+
+  # Load all the values eagerly into a normal Hash
+  def to_hash
+    h = {}
+    each { |k,v| h[k] = v }
+    h
+  end
+
+  def values
+    to_hash.values
   end
 
   def values_at(*keys)
     keys.map { |k| self[k] }
   end
+
+  ### end overriding of Hash methods ###
 
   # Ensure that +startAsync+ has been called on the request object.
   def ensure_async_started
@@ -110,36 +247,30 @@ class Rubylet::Environment
 
   private
 
-  # Lookup +key+ in the fronting hash, headers, or lazy set.  Return
-  # the value (which may be nil if that was explicitly stored in the
-  # fronting hash), or +default+.
-  def get_value(key, default)
-    val = @hash[key]
-    if NOT_FOUND.equal?(val)
-      if header = load_header(key)
-        header
-      else
-        lazy = fetch_lazy(key)
-        lazy.nil? ? default : lazy
-      end
+  # @return a value or NOT_FOUND
+  def fetch_header_or_other(key)
+    if header = load_header(key)
+      header
     else
-      val
+      other = fetch_other(key)
+      other.nil? ? NOT_FOUND : other
     end
+  end
+
+  def get_value(key, default)
   end
 
   # Attempt to load a header with Rack-land name +name+.  If found,
-  # store it in the fronting hash +@hash+ and return the value.
+  # store it in the fronting hash and return the value.
   #
   # @return [String] the value of the header or nil
-  #
-  # FIXME: not threadsafe.  should this be synchronized?
   def load_header(rname)
     if (sname = rack2servlet(rname)) && (header = @req.getHeader(sname))
-      @hash[rname] = header
+      self[rname] = header
     end
   end
 
-  def header_keys
+  def keys_headers
     @req.getHeaderNames.map { |sname| servlet2rack(sname) }
   end
 
@@ -208,7 +339,12 @@ class Rubylet::Environment
     async_context.complete
   end
 
-  def fetch_lazy(key)
+  # Note: returns nil (and not NOT_FOUND) since some of the calls to
+  # java may return nil.  So callers should consider 'nil' as
+  # NOT_FOUND.
+  #
+  # @return a value or nil
+  def fetch_other(key)
     case key
     when 'REQUEST_METHOD' then @req.getMethod
   
@@ -239,8 +375,6 @@ class Rubylet::Environment
     # probably implement this eventually.
     #
     # @see http://rack.rubyforge.org/doc/SPEC.html
-    #
-    # FIXME instance var set is not threadsafe, but probably ok
     when 'rack.input'
       @rack_input ||= @req.getInputStream.to_io
 
