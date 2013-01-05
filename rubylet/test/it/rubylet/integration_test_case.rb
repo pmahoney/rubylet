@@ -76,6 +76,8 @@ module Rubylet
       # In a separate JRuby runtime, create a servlet instance.  In this
       # runtime, start a Jetty server using that servlet.
       def setup_suite
+        puts; puts "setting up #{app_root}"
+
         @agent = Mechanize.new
 
         scope = Java::OrgJrubyEmbed::LocalContextScope::THREADSAFE
@@ -83,12 +85,13 @@ module Rubylet
         @container.setCurrentDirectory(app_root)
         @container.getProvider.getRubyInstanceConfig.setUpdateNativeENVEnabled(false)
         servlet = @container.runScriptlet <<-EOF
-          if !File.exists?('Gemfile.lock') || (File.mtime('Gemfile') > File.mtime('Gemfile.lock'))
-            puts "----- bundle install in \#{Dir.pwd}"
-            system 'bundle install --quiet'
-            puts "----- end bundle install"
-          end
           ENV['BUNDLE_GEMFILE'] = File.join(Dir.pwd, 'Gemfile')
+          if !File.exists?('Gemfile.lock') || (File.mtime('Gemfile') > File.mtime('Gemfile.lock'))
+            puts "----- bundle install"
+            require 'bundler'
+            require 'bundler/cli'
+            Bundler::CLI.new([], :quiet => true).invoke(:install)
+          end
           ENV['BUNDLE_WITHOUT'] = 'development:test'
           require 'bundler/setup'
           require 'rubylet/servlet'
