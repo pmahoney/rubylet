@@ -111,6 +111,32 @@ module Rubylet
       @env.has_key?('REQUEST_METHOD').must_equal true
     end
 
+    describe 'delete' do
+      it 'deletes' do
+        @env[:key] = 'value'
+        @env[:key].must_equal 'value'
+        @env.delete(:key)
+        @env[:key].must_be_nil
+        @env[:key] = 'value'
+        @env[:key].must_equal 'value'
+      end
+
+      it 'deletes other' do
+        @env['REQUEST_METHOD'].must_equal 'GET'
+        @env.delete 'REQUEST_METHOD'
+        @env['REQUEST_METHOD'].must_be_nil
+        @env['REQUEST_METHOD'] = 'GET'
+        @env['REQUEST_METHOD'].must_equal 'GET'
+      end
+
+      it 'deletes header' do
+        @env.delete 'HTTP_USER_AGENT'
+        @env['HTTP_USER_AGENT'].must_be_nil
+        @env['HTTP_USER_AGENT'] = 'browser'
+        @env['HTTP_USER_AGENT'].must_equal 'browser'
+      end
+    end
+
     describe 'each' do
       it 'iterates over only present keys' do
         @env.each do |k,v|

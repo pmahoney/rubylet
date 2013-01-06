@@ -23,7 +23,8 @@ class Rubylet::Environment < Hash
   # rack.input must use this encoding
   ASCII_8BIT = Encoding.find('ASCII-8BIT')
 
-  # Used as a 'not found' sentinel in the companion hash
+  # Used as a 'not found' sentinel in the self hash.  Also stored
+  # directly in self hash to mark as deleted.
   NOT_FOUND = Object.new.freeze
 
   # Used as default arg to #fetch, which raises error by default on not found
@@ -62,6 +63,34 @@ class Rubylet::Environment < Hash
     java.servlet_path
   )
 
+  class << self
+    # Create an environment as a plain Hash, if the lazy hash will not
+    # work for some reason.  This is not ideal, as it calls just
+    # #fetch_other for each key (hash could be populated directly).
+    def new_as_hash(req)
+      env = new(req)
+      hash = {}
+
+      # load all headers
+      req.getHeaderNames.each do |sname|
+        rname = env.servlet2rack(sname)
+        hash[rname] = req.getHeader(sname)
+      end
+
+      # load all other keys
+      KEYS_OTHER.each do |key|
+        value = env.send(:fetch_other, key)
+        hash[key] = value if !value.nil?
+      end
+
+      # for async stuff, Rubylet::Servlet needs a way to call this
+      # method before returning from #service
+      hash['rubylet.ensure_async_started'] = env.method(:ensure_async_started)
+
+      hash
+    end
+  end
+
   # @param [javax.servlet.http.HttpServletRequest] req
   def initialize(req)
     @req = req
@@ -84,7 +113,6 @@ class Rubylet::Environment < Hash
                   :default=,
                   :default_proc,
                   :default_proc=,
-                  :delete,
                   :delete_if,
                   :eql?,
                   :flatten,
@@ -114,7 +142,6 @@ class Rubylet::Environment < Hash
   private
   alias :fetch_super :fetch
   alias :keys_super :keys
-  alias :super_get :[]
   public
 
   def [](key)
@@ -131,6 +158,16 @@ class Rubylet::Environment < Hash
 
   def default=(d)
     @default = d
+  end
+
+  def delete(key)
+    val = fetch(key, NOT_FOUND)
+    if NOT_FOUND.equal?(val)
+      default
+    else
+      self[key] = NOT_FOUND
+      val
+    end
   end
 
   # TODO: support enumerator version
@@ -174,9 +211,7 @@ class Rubylet::Environment < Hash
   # yield to the block if given.
   def fetch(key, default = RAISE_KEY_ERROR)
     val = fetch_super(key, &method(:fetch_header_or_other))
-    if !NOT_FOUND.equal?(val)
-      val
-    else
+    if NOT_FOUND.equal?(val)
       if !RAISE_KEY_ERROR.equal?(default)
         default
       elsif block_given?
@@ -184,11 +219,15 @@ class Rubylet::Environment < Hash
       else
         raise KeyError, "#{key} not found"
       end
+    else
+      val
     end
   end
 
   def has_key?(key)
-    super(key) || !NOT_FOUND.equal?(fetch_header_or_other(key))
+    # Note: can't use has_key_super? because we may have stored
+    # NOT_FOUND to mark as deleted.
+    !NOT_FOUND.equal?(fetch(key, NOT_FOUND))
   end
   alias :include? :has_key?
   alias :key? :has_key?
