@@ -65,6 +65,7 @@ module Rubylet
     # assumed to be an HttpServletResponse
     def service(req, resp)
       env = Environment.new(req)
+      # env = Environment.new_as_hash(req)
       
       catch(:async) do
         # app may throw :async
@@ -86,6 +87,9 @@ module Rubylet
       # Before this method returns, we need to ensure #startAsync has
       # been called on the request, so we force env to do so.
       env.ensure_async_started
+
+      # If using Environment.new_as_hash(req), then call this instead
+      # env['rubylet.ensure_async_started'].call
     end
   end
 end

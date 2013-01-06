@@ -63,6 +63,34 @@ class Rubylet::Environment < Hash
     java.servlet_path
   )
 
+  class << self
+    # Create an environment as a plain Hash, if the lazy hash will not
+    # work for some reason.  This is not ideal, as it calls just
+    # #fetch_other for each key (hash could be populated directly).
+    def new_as_hash(req)
+      env = new(req)
+      hash = {}
+
+      # load all headers
+      req.getHeaderNames.each do |sname|
+        rname = env.servlet2rack(sname)
+        hash[rname] = req.getHeader(sname)
+      end
+
+      # load all other keys
+      KEYS_OTHER.each do |key|
+        value = env.send(:fetch_other, key)
+        hash[key] = value if !value.nil?
+      end
+
+      # for async stuff, Rubylet::Servlet needs a way to call this
+      # method before returning from #service
+      hash['rubylet.ensure_async_started'] = env.method(:ensure_async_started)
+
+      hash
+    end
+  end
+
   # @param [javax.servlet.http.HttpServletRequest] req
   def initialize(req)
     @req = req
