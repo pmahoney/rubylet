@@ -100,7 +100,7 @@ class Rubylet::Environment < Hash
   def self.not_implemented(*syms)
     syms.each do |sym|
       define_method(sym) do |*args, &block|
-        raise NotImplementedError
+        raise NotImplementedError, sym.to_s
       end
     end
   end
@@ -118,13 +118,11 @@ class Rubylet::Environment < Hash
                   :flatten,
                   :has_value?,
                   :hash,
-                  :initialize_copy,
                   :keep_if,
                   :key,
                   :rassoc,
                   :reject,
                   :reject!,
-                  :replace,
                   :select!,
                   :shift,
                   :value?)
@@ -132,6 +130,7 @@ class Rubylet::Environment < Hash
   # methods not overridden, used as-is from super class
   #
   # []=
+  # initialize_copy, replace
   # reverse_merge! (Rails 3.0 monkeypatch)
   # merge!
   # rehash (?)
