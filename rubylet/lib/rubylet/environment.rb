@@ -290,7 +290,7 @@ class Rubylet::Environment < Hash
 
   # @return a value or NOT_FOUND
   def fetch_header_or_other(key)
-    if header = load_header(key)
+    if header = fetch_header(key)
       header
     else
       other = fetch_other(key)
@@ -301,13 +301,13 @@ class Rubylet::Environment < Hash
   def get_value(key, default)
   end
 
-  # Attempt to load a header with Rack-land name +name+.  If found,
-  # store it in the fronting hash and return the value.
+  # Attempt to fetch a header with Rack-land name +name+.  If found,
+  # return the value.
   #
   # @return [String] the value of the header or nil
-  def load_header(rname)
-    if (sname = rack2servlet(rname)) && (header = @req.getHeader(sname))
-      self[rname] = header
+  def fetch_header(rname)
+    if sname = rack2servlet(rname)
+      @req.getHeader(sname)
     end
   end
 
