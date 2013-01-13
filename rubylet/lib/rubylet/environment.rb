@@ -315,13 +315,6 @@ class Rubylet::Environment < Hash
     @req.getHeaderNames.map { |sname| servlet2rack(sname) }
   end
 
-  # Strip a lone slash and also reduce duplicate '/' to a single
-  # slash.
-  def clean_slashes(str)
-    no_dups = str.gsub(%r{/+}, '/')
-    no_dups == '/' ? '' : no_dups
-  end
-
   # @return [javax.servlet.AsyncContext]
   def async_context
     @lock.synchronize { @async_context ||= @req.startAsync }
@@ -390,11 +383,11 @@ class Rubylet::Environment < Hash
     when 'REQUEST_METHOD' then @req.getMethod
   
     # context path joined with servlet_path, but not nil and empty
-    # string rather than '/'
-    when 'SCRIPT_NAME'
-      context_path = @req.context_path || '/'
-      servlet_path = @req.servlet_path || ''
-      clean_slashes(context_path + servlet_path)
+    # string rather than '/'.  According to Java Servlet spec,
+    # context_path starts with '/' and never ends with '/' (root
+    # context returns empty string).  Similarly, servlet_path will be
+    # the empty string (for '/*' matches) or '/<path>'.
+    when 'SCRIPT_NAME'      then @req.context_path + @req.servlet_path
 
     # constants
     when 'rack.version'      then ::Rack::VERSION
@@ -402,7 +395,14 @@ class Rubylet::Environment < Hash
     when 'rack.multiprocess' then false
     when 'rack.run_once'     then false
 
-    when 'PATH_INFO'    then clean_slashes(@req.path_info || '')
+    # not nil, and empty string rather than '/'
+    when 'PATH_INFO'
+      case path = @req.path_info
+      when nil, '/'
+        ''
+      else
+        path
+      end
     when 'QUERY_STRING' then @req.getQueryString || ''
     when 'SERVER_NAME'  then @req.getServerName
     when 'SERVER_PORT'  then @req.getServerPort.to_s
