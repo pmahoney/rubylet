@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
                       'lib/**/*.rb',
                       'spec/**/*.rb']
 
-  s.add_dependency 'mini_aether'
+  s.add_dependency 'mini_aether', '>= 0.0.7'
 
   s.add_development_dependency 'minitest'
   s.add_development_dependency 'minitest-matchers'

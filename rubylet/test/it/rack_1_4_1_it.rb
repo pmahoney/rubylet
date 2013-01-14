@@ -1,10 +1,10 @@
-# Integration test with plain Rack 1.4
+# Integration test with plain Rack 1.4.1
 
 require 'it_helper'
 
-class Rack_1_4_It < MiniTest::Unit::TestCase
+class Rack_1_4_1_It < MiniTest::Unit::TestCase
   include Rubylet::IntegrationTestCase
-  self.app_root = File.expand_path('../examples/rack-1.4', __FILE__)
+  self.app_root = File.expand_path('../examples/rack-1.4.1', __FILE__)
 
   def test_delayed
     resp = get('tests/delayed')

@@ -20,6 +20,37 @@ class Rubylet::Environment < Hash
   include Rubylet::Respond
   include Rubylet::HeadersHelper
 
+  # It's just bit faster to use constants in a case/when block.
+  # Frozen strings are just a small shade faster than un-frozen.
+  ASYNC_CALLBACK       = 'async.callback'.freeze
+  JAVA_SERVLET_REQUEST = 'java.servlet_request'.freeze
+  PATH_INFO            = 'PATH_INFO'.freeze
+  QUERY_STRING         = 'QUERY_STRING'.freeze
+  RACK_ERRORS          = 'rack.errors'.freeze
+  RACK_INPUT           = 'rack.input'.freeze
+  RACK_MULTIPROCESS    = 'rack.multiprocess'.freeze
+  RACK_MULTITHREAD     = 'rack.multithread'.freeze
+  RACK_RUN_ONCE        = 'rack.run_once'.freeze
+  RACK_URL_SCHEME      = 'rack.url_scheme'.freeze
+  RACK_VERSION         = 'rack.version'.freeze
+  REMOTE_ADDR          = 'REMOTE_ADDR'.freeze
+  REMOTE_HOST          = 'REMOTE_HOST'.freeze
+  REMOTE_PORT          = 'REMOTE_PORT'.freeze
+  REMOTE_USER          = 'REMOTE_USER'.freeze
+  REQUEST_METHOD       = 'REQUEST_METHOD'.freeze
+  REQUEST_PATH         = 'REQUEST_PATH'.freeze
+  REQUEST_URI          = 'REQUEST_URI'.freeze
+  SCRIPT_NAME          = 'SCRIPT_NAME'.freeze
+  SERVER_NAME          = 'SERVER_NAME'.freeze
+  SERVER_PORT          = 'SERVER_PORT'.freeze
+  SERVER_PROTOCOL      = 'SERVER_PROTOCOL'.freeze
+  SERVER_SOFTWARE      = 'SERVER_SOFTWARE'.freeze
+
+  # Other misc string constants
+  EMPTY_STRING = ''.freeze
+  SLASH        = '/'.freeze
+  QUESTION     = '?'.freeze
+
   # rack.input must use this encoding
   ASCII_8BIT = Encoding.find('ASCII-8BIT')
 
@@ -100,7 +131,7 @@ class Rubylet::Environment < Hash
   def self.not_implemented(*syms)
     syms.each do |sym|
       define_method(sym) do |*args, &block|
-        raise NotImplementedError
+        raise NotImplementedError, sym.to_s
       end
     end
   end
@@ -118,13 +149,11 @@ class Rubylet::Environment < Hash
                   :flatten,
                   :has_value?,
                   :hash,
-                  :initialize_copy,
                   :keep_if,
                   :key,
                   :rassoc,
                   :reject,
                   :reject!,
-                  :replace,
                   :select!,
                   :shift,
                   :value?)
@@ -132,6 +161,7 @@ class Rubylet::Environment < Hash
   # methods not overridden, used as-is from super class
   #
   # []=
+  # initialize_copy, replace
   # reverse_merge! (Rails 3.0 monkeypatch)
   # merge!
   # rehash (?)
@@ -291,7 +321,7 @@ class Rubylet::Environment < Hash
 
   # @return a value or NOT_FOUND
   def fetch_header_or_other(key)
-    if header = load_header(key)
+    if header = fetch_header(key)
       header
     else
       other = fetch_other(key)
@@ -302,25 +332,18 @@ class Rubylet::Environment < Hash
   def get_value(key, default)
   end
 
-  # Attempt to load a header with Rack-land name +name+.  If found,
-  # store it in the fronting hash and return the value.
+  # Attempt to fetch a header with Rack-land name +name+.  If found,
+  # return the value.
   #
   # @return [String] the value of the header or nil
-  def load_header(rname)
-    if (sname = rack2servlet(rname)) && (header = @req.getHeader(sname))
-      self[rname] = header
+  def fetch_header(rname)
+    if sname = rack2servlet(rname)
+      @req.getHeader(sname)
     end
   end
 
   def keys_headers
     @req.getHeaderNames.map { |sname| servlet2rack(sname) }
-  end
-
-  # Strip a lone slash and also reduce duplicate '/' to a single
-  # slash.
-  def clean_slashes(str)
-    no_dups = str.gsub(%r{/+}, '/')
-    no_dups == '/' ? '' : no_dups
   end
 
   # @return [javax.servlet.AsyncContext]
@@ -388,27 +411,34 @@ class Rubylet::Environment < Hash
   # @return a value or nil
   def fetch_other(key)
     case key
-    when 'REQUEST_METHOD' then @req.getMethod
+    when REQUEST_METHOD then @req.getMethod
   
     # context path joined with servlet_path, but not nil and empty
-    # string rather than '/'
-    when 'SCRIPT_NAME'
-      context_path = @req.context_path || '/'
-      servlet_path = @req.servlet_path || ''
-      clean_slashes(context_path + servlet_path)
+    # string rather than '/'.  According to Java Servlet spec,
+    # context_path starts with '/' and never ends with '/' (root
+    # context returns empty string).  Similarly, servlet_path will be
+    # the empty string (for '/*' matches) or '/<path>'.
+    when SCRIPT_NAME      then @req.context_path + @req.servlet_path
 
     # constants
-    when 'rack.version'      then ::Rack::VERSION
-    when 'rack.multithread'  then true
-    when 'rack.multiprocess' then false
-    when 'rack.run_once'     then false
+    when RACK_VERSION      then ::Rack::VERSION
+    when RACK_MULTITHREAD  then true
+    when RACK_MULTIPROCESS then false
+    when RACK_RUN_ONCE     then false
 
-    when 'PATH_INFO'    then clean_slashes(@req.path_info || '')
-    when 'QUERY_STRING' then @req.getQueryString || ''
-    when 'SERVER_NAME'  then @req.getServerName
-    when 'SERVER_PORT'  then @req.getServerPort.to_s
+    # not nil, and empty string rather than '/'
+    when PATH_INFO
+      case path = @req.path_info
+      when nil, SLASH
+        EMPTY_STRING
+      else
+        path
+      end
+    when QUERY_STRING then @req.getQueryString || EMPTY_STRING
+    when SERVER_NAME  then @req.getServerName
+    when SERVER_PORT  then @req.getServerPort.to_s
 
-    when 'rack.url_scheme' then @req.getScheme
+    when RACK_URL_SCHEME then @req.getScheme
 
     # TODO: this is not rewindable in violation of the Rack
     # spec.  Requiring rewind ability on every request seems
@@ -417,36 +447,33 @@ class Rubylet::Environment < Hash
     # probably implement this eventually.
     #
     # @see http://rack.rubyforge.org/doc/SPEC.html
-    when 'rack.input'
-      # Store in self hash because we can only call #to_io once.
-      # Don't need an instance var because once it's in the hash,
-      # should never fall through to fetch_other
-      io = @req.getInputStream.to_io.binmode
-      io.set_encoding(ASCII_8BIT)
-      self['rack.input'] = io
+    when RACK_INPUT
+      # Store in instance var because we can only call #to_io once.
+      unless @io
+        @io = @req.getInputStream.to_io.binmode
+        @io.set_encoding(ASCII_8BIT)
+      end
+      @io
 
-    when 'rack.errors'  then Rubylet::Errors.new(@req.servlet_context)
+    when RACK_ERRORS  then Rubylet::Errors.new(@req.servlet_context)
       
-    when 'REMOTE_ADDR'  then @req.getRemoteAddr
-    when 'REMOTE_HOST'  then @req.getRemoteHost
-    when 'REMOTE_USER'  then @req.getRemoteUser
-    when 'REMOTE_PORT'  then @req.getRemotePort.to_s
-    when 'REQUEST_PATH' then @req.getPathInfo
+    when REMOTE_ADDR  then @req.getRemoteAddr
+    when REMOTE_HOST  then @req.getRemoteHost
+    when REMOTE_USER  then @req.getRemoteUser
+    when REMOTE_PORT  then @req.getRemotePort.to_s
+    when REQUEST_PATH then @req.getPathInfo
 
     # note, ruby side is URI, java side is URL
-    when 'REQUEST_URI'
+    when REQUEST_URI
       q = @req.getQueryString
-      @req.getRequestURL.to_s + (q ? ('?' + q) : '')
+      @req.getRequestURL.to_s + (q ? (QUESTION + q) : EMPTY_STRING)
       
-    when 'SERVER_PROTOCOL' then @req.getProtocol
-    when 'SERVER_SOFTWARE' then @req.servlet_context.getServerInfo
+    when SERVER_PROTOCOL then @req.getProtocol
+    when SERVER_SOFTWARE then @req.servlet_context.getServerInfo
 
-    when 'java.servlet_request' then @req
-    when 'java.context_path'    then @req.getContextPath
-    when 'java.path_info'       then @req.getPathInfo
-    when 'java.servlet_path'    then @req.getServletPath
+    when JAVA_SERVLET_REQUEST then @req
 
-    when 'async.callback'
+    when ASYNC_CALLBACK
       if @req.respond_to?(:isAsyncSupported) && @req.isAsyncSupported
         method :async_respond
       end

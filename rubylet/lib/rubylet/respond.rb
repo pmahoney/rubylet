@@ -20,7 +20,7 @@ module Rubylet
         # jruby-rack.
         write_body(body, resp.getOutputStream) { |part| part.to_java_bytes }
       else
-        write_body(body, resp.getWriter)
+        write_body(body, resp.getOutputStream) { |part| part.to_java_bytes }
       end
     ensure
       body.close if body.respond_to?(:close) rescue nil
