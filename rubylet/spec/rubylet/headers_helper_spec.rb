@@ -24,6 +24,11 @@ module Rubylet
       it 'return nil on non-header' do
         @helper.rack2servlet('NOT_HEADER').must_equal nil
       end
+
+      it 'returns nil for disallowed rack-like Content-(Length|Type)' do
+        @helper.rack2servlet('HTTP_CONTENT_LENGTH').must_be_nil
+        @helper.rack2servlet('HTTP_CONTENT_TYPE').must_be_nil
+      end
     end
 
     describe 'servlet2rack' do
