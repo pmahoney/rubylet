@@ -42,6 +42,15 @@ module Rubylet
       self
     end
 
+    # Java says these will never be null
+    def emptyString
+      ''
+    end
+    alias :getContextPath :emptyString
+    alias :context_path :emptyString
+    alias :getServletPath :emptyString
+    alias :servlet_path :emptyString
+
     def getServerInfo
       'Fake Server'
     end
