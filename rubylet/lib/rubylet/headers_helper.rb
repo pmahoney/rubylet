@@ -45,12 +45,12 @@ module Rubylet
     # @param [String] name
     # @return [String] a Rack-land HTTP header name
     def servlet2rack(name)
-      if equals_ignore_case?(SERVLET_CONTENT_LENGTH)
+      if equals_ignore_case?(SERVLET_CONTENT_LENGTH, name)
         RACK_CONTENT_LENGTH
-      elsif equals_ignore_case?(SERVLET_CONTENT_TYPE)
+      elsif equals_ignore_case?(SERVLET_CONTENT_TYPE, name)
         RACK_CONTENT_TYPE
       else
-        RACK_PREFIX + name.upcase.gsub(SERVLET_PREFIX, RACK_PREFIX)
+        RACK_PREFIX + name.upcase.gsub(SERVLET_SEPARATOR, RACK_SEPARATOR)
       end
     end
   end

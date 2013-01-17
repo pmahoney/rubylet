@@ -17,8 +17,8 @@ module Rubylet
       end
 
       it 'handles Content-(Length|Type)' do
-        @helper.rack2servlet('CONTENT_LENGTH').must_equal 'CONTENT-LENGTH'
-        @helper.rack2servlet('CONTENT_TYPE').must_equal 'CONTENT-TYPE'
+        @helper.rack2servlet('CONTENT_LENGTH').must_equal 'Content-Length'
+        @helper.rack2servlet('CONTENT_TYPE').must_equal 'Content-Type'
       end
 
       it 'return nil on non-header' do
