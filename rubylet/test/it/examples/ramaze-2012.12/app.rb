@@ -21,7 +21,8 @@ class SessionValuesController < Controller
     if request.params['value']
       session[key] = request.params['value']
     end
-    "session[#{key}] = #{session[key]}"
+    @key = key
+    @value = session[key]
   end
 end
 

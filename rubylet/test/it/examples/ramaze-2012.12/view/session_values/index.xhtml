@@ -1,0 +1,12 @@
+<p>
+  <code>#{@key}</code> =&nbsp;
+  <span style="border:thin solid blue;padding:2px;padding-left:1em;padding-right:1em;">
+    #{@value}
+  </span>
+</p>
+
+<form action="./#{@key}" method="POST">
+  <p>Set the value of <code>#{@key}</code></p>
+  <input name="value" type="text" value="#{@value}" />
+  <input type="submit" value="set">
+</form>
