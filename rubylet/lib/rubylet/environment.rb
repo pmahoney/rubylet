@@ -430,11 +430,11 @@ class Rubylet::Environment < Hash
     when PATH_INFO
       case path = @req.path_info
       when nil, SLASH
-        EMPTY_STRING
+        EMPTY_STRING.dup
       else
         path
       end
-    when QUERY_STRING then @req.getQueryString || EMPTY_STRING
+    when QUERY_STRING then @req.getQueryString || EMPTY_STRING.dup
     when SERVER_NAME  then @req.getServerName
     when SERVER_PORT  then @req.getServerPort.to_s
 
