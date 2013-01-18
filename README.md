@@ -19,11 +19,10 @@ A simple `Rack::Handler` using `rubylet` and
 [Jetty](http://eclipse.org/jetty) as the servlet container. Meant for
 testing and development purposes only.
 
-With a standard `config.ru`, and `public/stylesheets` and
-`public/javascripts` folders, the following will load the rack
-application and serve static files directly from Jetty:
+With a standard `config.ru`, and a `public` folder, the following will
+load the rack application and serve static files directly from Jetty:
 
-    rackup -s rack/jetty -O StaticUrls=/stylesheets,/javascripts
+    rackup -s rack/jetty
 
 rubylet-ee
 ==========
