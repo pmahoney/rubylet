@@ -64,7 +64,7 @@ module Rubylet
     # @param [javax.servlet.ServletResponse] resp a Java servlet response
     # assumed to be an HttpServletResponse
     def service(req, resp)
-      env = Environment.new(req)
+      env = Environment.wrap(req)
       # env = Environment.new_as_hash(req)
       
       catch(:async) do
