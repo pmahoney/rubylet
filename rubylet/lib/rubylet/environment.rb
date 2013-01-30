@@ -51,9 +51,6 @@ class Rubylet::Environment < Hash
   SLASH        = '/'.freeze
   QUESTION     = '?'.freeze
 
-  # rack.input must use this encoding
-  ASCII_8BIT = Encoding.find('ASCII-8BIT')
-
   # Used as a 'not found' sentinel in the self hash.  Also stored
   # directly in self hash to mark as deleted.
   NOT_FOUND = Object.new.freeze
@@ -475,7 +472,8 @@ class Rubylet::Environment < Hash
       # Store in instance var because we can only call #to_io once.
       unless @io
         @io = @req.getInputStream.to_io.binmode
-        @io.set_encoding(ASCII_8BIT)
+        # rack requires ascii-8bit.  Encoding is only defined in ruby >= 1.9
+        @io.set_encoding(Encoding::ASCII_8BIT) if defined?(Encoding::ASCII_8BIT)
       end
       @io
 
