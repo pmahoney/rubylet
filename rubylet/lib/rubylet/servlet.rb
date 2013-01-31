@@ -54,11 +54,6 @@ module Rubylet
       end
     end
     
-    # def param(config, name)
-    #   config.getInitParameter(name) ||
-    #     config.getServletContext.getInitParameter(name)
-    # end
-
     def param(name)
       @servlet_config.getInitParameter(name) ||
         @servlet_config.getServletContext.getInitParameter(name)
