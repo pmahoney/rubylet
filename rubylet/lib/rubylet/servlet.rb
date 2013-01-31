@@ -10,7 +10,21 @@ module Rubylet
     include Rubylet::Respond
 
     attr_reader :servlet_config, :app, :context
-    
+
+    # If a rack application is given, requests to this servlet will be
+    # forwarded to the rack application.  Otherwise, during servlet
+    # init, a rack app will be loaded according to the configuration.
+    #
+    # @param [] app a Rack application (optional)
+    def initialize(app = nil)
+      @app = app
+    end
+
+    # Called by the servlet container to initialize this servlet.  If
+    # a rack application +app+ was not given to the constructor, then
+    # the servlet parameter +rubylet.rackupFile+ (default 'config.ru')
+    # will be loaded and used as the rack application.
+    #
     # @param [javax.servlet.ServletConfig] servletConfig
     def init(servletConfig)
       @servlet_config = servletConfig
@@ -25,9 +39,11 @@ module Rubylet
       # TODO: some rubylet-ee integration tests test this, but
       # rubylet's integrations touch more versions of rails
       ENV['RAILS_RELATIVE_URL_ROOT'] = relative_root
-      
-      rackup_file = param('rubylet.rackupFile') || 'config.ru'
-      @app, _opts = Rack::Builder.parse_file(rackup_file)
+
+      unless @app
+        rackup_file = param('rubylet.rackupFile') || 'config.ru'
+        @app, _opts = Rack::Builder.parse_file(rackup_file)
+      end
     end
 
     def relative_root
