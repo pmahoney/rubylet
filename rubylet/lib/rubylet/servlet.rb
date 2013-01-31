@@ -64,7 +64,7 @@ module Rubylet
     end
 
     def to_s
-      "#<#{self.class} @app=#{@app}>"
+      "#{self.class}#{@app}"
     end
 
     alias :servlet_info :to_s
