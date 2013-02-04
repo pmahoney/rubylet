@@ -1,6 +1,13 @@
 require 'mini_aether'
+
 MiniAether.setup do
-  jar 'org.eclipse.jetty:jetty-servlet:8.1.7.v20120910'
+  jetty_version = '8.1.8.v20121106'
+
+  jar "org.eclipse.jetty:jetty-servlet:#{jetty_version}"
+
+  # slf4j_version = '1.7.2'
+  # jar "org.slf4j:slf4j-api:#{slf4j_version}"
+  # jar "org.slf4j:slf4j-simple:#{slf4j_version}"
 end
 
 require 'rack/handler'
@@ -9,52 +16,51 @@ require 'rubylet/static_file_filter'
 
 module Rubylet
   class Jetty
-    Server = Java::OrgEclipseJettyServer::Server
-    ServletContextHandler = Java::OrgEclipseJettyServlet::ServletContextHandler
-    ServletHolder = Java::OrgEclipseJettyServlet::ServletHolder
-    FilterHolder = Java::OrgEclipseJettyServlet::FilterHolder
+    Server                 = Java::OrgEclipseJettyServer::Server
+    ServletContextHandler  = Java::OrgEclipseJettyServlet::ServletContextHandler
+    ServletHolder          = Java::OrgEclipseJettyServlet::ServletHolder
+    FilterHolder           = Java::OrgEclipseJettyServlet::FilterHolder
     SelectChannelConnector = Java::OrgEclipseJettyServerNio::SelectChannelConnector
-    ExecutorThreadPool = Java::OrgEclipseJettyUtilThread::ExecutorThreadPool
-    DefaultServlet = Java::OrgEclipseJettyServlet::DefaultServlet
-    DispatcherType = Java::JavaxServlet::DispatcherType
+    ExecutorThreadPool     = Java::OrgEclipseJettyUtilThread::ExecutorThreadPool
+    DefaultServlet         = Java::OrgEclipseJettyServlet::DefaultServlet
+    DispatcherType         = Java::JavaxServlet::DispatcherType
 
-    class << self
-      # Create and run a global server
-      def run(app, options)
-        @server = new(app, options)
-        @server.start
-        @server.join
-      end
-
-      # Shutdown the global server
-      def shutdown
-        @server.stop
-      end
-
-      def valid_options
-        {
-          'Threads=NUM' =>
-            'Number of threads in the threadpool (default unlimited)',
-          'NoPublic' =>
-            'Set to disable static file serving (default is to serve)',
-          'PublicRoot=PATH' =>
-            'Path to static files (default "public")'
-        }
-      end
+    # Create and run a global server
+    def self.run(app, options)
+      @server = new(app, options)
+      @server.start
+      @server.join
     end
 
-    attr_reader :app, :options
+    # Shutdown the global server
+    def self.shutdown
+      @server.stop
+    end
+
+    def self.valid_options
+      {
+        'ContextPath=PATH' =>
+          'The context path at which to serve the app (defualt "/")',
+        'Threads=NUM' =>
+          'Number of threads in the threadpool (default unlimited)',
+        'NoPublic' =>
+          'Set to disable static file serving (default is to serve)',
+        'PublicRoot=PATH' =>
+          'Path to static files (default "public")'
+      }
+    end
+
+    attr_reader :options
 
     def initialize(app, options)
       @app = app
       @options = options
+      @contextPath = options[:ContextPath] || '/'
+
       @context = ServletContextHandler.new(ServletContextHandler::SESSIONS)
-      @context.setContextPath('/')
-
-      unless options[:NoPublic]
-        add_public
-      end
-
+      @context.setContextPath(@contextPath)
+      
+      add_public unless options[:NoPublic]
       add_rack_app
 
       @server = make_server
@@ -73,13 +79,12 @@ module Rubylet
       @server.stop
     end
 
-  private
+    private
 
     # order matters here; rubylet must be added *after* the
     # default servlet so that rubylet has priority
     def add_rack_app
-      ServletHolder.new(Rubylet::Servlet.new).tap do |holder|
-        holder.setInitParameter 'rubylet.rackupFile', options[:config]
+      ServletHolder.new(Rubylet::Servlet.new(@app)).tap do |holder|
         @context.addServlet holder, '/*'
       end
     end
