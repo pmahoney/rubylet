@@ -18,9 +18,9 @@ module Rubylet
         # better to either not have ruby serve static files or to put
         # some cache out front.  See about using the file channel like
         # jruby-rack.
-        write_body(body, resp.getOutputStream) { |part| part.to_java_bytes }
+        write_body(body, resp.getWriter)
       else
-        write_body(body, resp.getOutputStream) { |part| part.to_java_bytes }
+        write_body(body, resp.getWriter)
       end
     ensure
       body.close if body.respond_to?(:close) rescue nil
