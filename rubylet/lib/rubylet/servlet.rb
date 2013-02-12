@@ -1,5 +1,6 @@
 require 'java'
 require 'rack'
+require 'rubylet/dechunking_body'
 require 'rubylet/environment'
 require 'rubylet/respond'
 
@@ -84,6 +85,7 @@ module Rubylet
 
         # status of -1 also starts :async
         unless status == -1
+          body = DechunkingBody.new(body) if chunked?(headers)
           respond(resp, status, headers, body)
           return
         end
@@ -101,6 +103,15 @@ module Rubylet
 
       # If using Environment.new_as_hash(req), then call this instead
       # env['rubylet.ensure_async_started'].call
+    end
+
+    private
+
+    TRANSFER_ENCODING = 'Transfer-Encoding'.freeze
+    CHUNKED = 'chunked'.freeze
+
+    def chunked?(headers)
+      headers.delete(TRANSFER_ENCODING) == CHUNKED
     end
   end
 end
