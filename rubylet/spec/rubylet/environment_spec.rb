@@ -85,7 +85,7 @@ module Rubylet
 
   describe Environment do
     before do
-      @env = Environment.new(FakeRequest.new)
+      @env = Environment.wrap(FakeRequest.new)
     end
 
     it 'stores and retrieves values' do
