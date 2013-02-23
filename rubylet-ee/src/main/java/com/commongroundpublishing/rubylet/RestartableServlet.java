@@ -33,7 +33,7 @@ public final class RestartableServlet implements Servlet, Restartable {
                                   new ServletContextConfig(servletConfig.getServletContext()));
         factory = Util.getFactory(config, Util.RESTARTABLE_RUBY_FACTORY);
         factory.reference(this);
-        childServlet.set(factory.makeServlet(servletConfig));
+        childServlet.set(assertNotNull(factory.makeServlet(servletConfig)));
     }
     
     public void restart() throws ServletException {
