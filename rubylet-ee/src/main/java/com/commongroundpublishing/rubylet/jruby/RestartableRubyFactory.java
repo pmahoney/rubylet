@@ -21,7 +21,7 @@ import com.commongroundpublishing.rubylet.config.IConfig;
 
 import static com.commongroundpublishing.rubylet.Util.assertNotNull;;
 
-public final class RestartableRubyFactory implements Factory, Restartable {
+public final class RestartableRubyFactory implements Factory {
     
     private static final Logger logger = LoggerFactory.getLogger(RestartableRubyFactory.class);
     
@@ -64,7 +64,7 @@ public final class RestartableRubyFactory implements Factory, Restartable {
      * <p>FIXME: If any restartables throw exceptions, the old
      * factory will not be destroyed, and we may leak runtimes...
      */
-    public void restart() {
+    private void restart() {
         final Factory oldFactory = assertNotNull(factory);
         factory = null;
         init(assertNotNull(originalConfig));
