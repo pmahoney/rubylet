@@ -1,4 +1,4 @@
-script: 'test.sh'
+script: './test.sh'
 language: ruby
 rvm:
   - jruby-19mode
