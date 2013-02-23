@@ -1,5 +1,8 @@
-Rubylet
+Rubylet [![Build Status][travis-img]][travis-ci]
 =======
+
+[travis-img]: https://api.travis-ci.org/pmahoney/rubylet.png
+[travis-ci]: https://travis-ci.org/pmahoney/rubylet
 
 A collection of Ruby and Java code to support running Rack
 applications (Rails, Sinatra, others) inside Java Servlet containers
