@@ -2,4 +2,6 @@ source 'http://rubygems.org'
 gem 'rack', '= 1.5.0'
 gem 'rubylet', :path => '../../../..', :require => false
 gem 'rubylet-jetty', :path => '../../../../../rubylet-jetty', :require => false
+gem 'rubylet-tomcat', :path => '../../../../../rubylet-tomcat', :require => false
+
 

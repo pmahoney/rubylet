@@ -1,0 +1,5 @@
+source 'http://rubygems.org'
+gemspec
+gem 'rubylet', :path => '../rubylet'
+
+gem 'mini_aether', :path => '/home/pat/dev/ruby/mini_aether'
