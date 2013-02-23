@@ -1,19 +1,19 @@
 Rubylet
--------
+=======
 
 A collection of Ruby and Java code to support running Rack
 applications (Rails, Sinatra, others) inside Java Servlet containers
 (Jetty, others).
 
 rubylet
-=======
+-------
 
 A pure Ruby implementation of the Java Servlet API that forwards to a
 contained Rack application as an alternative to
 [JRuby-Rack](https://github.com/jruby/jruby-rack).
 
 rubylet-jetty
-=============
+-------------
 
 A simple `Rack::Handler` using `rubylet` and
 [Jetty](http://eclipse.org/jetty) as the servlet container. Meant for
@@ -25,7 +25,7 @@ load the rack application and serve static files directly from Jetty:
     rackup -s rack/jetty
 
 rubylet-ee
-==========
+----------
 
 A Java wrapper around `rubylet` that can be deployed in a WAR file to
 a Java EE server.
@@ -47,7 +47,7 @@ See [rubylet-ee README](https://github.com/commonground/rubylet/tree/master/ruby
 for more details.
 
 rubylet-tasks
-=============
+-------------
 
 Some Rake tasks for building a WAR file using `rubylet-ee`.  In the
 Rakefile of a Rack application:
