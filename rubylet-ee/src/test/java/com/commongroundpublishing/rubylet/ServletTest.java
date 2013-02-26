@@ -5,6 +5,7 @@ import static junitx.framework.StringAssert.assertNotContains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,8 +24,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.commongroundpublishing.rubylet.ExternalJRubyLoader;
-import com.commongroundpublishing.rubylet.Runtime;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
@@ -289,13 +288,22 @@ public class ServletTest {
             FileUtils.touch(restartFile);
             
             // perform request to trigger reload
-            get("/");
-            
-            // unreliably wait until app is reloaded, ok for now?
-            sleep(6000);
-
-            // this request should be against the reloaded app
-            final HtmlPage page = get("/");
+            HtmlPage page = get("/");
+            long timeoutAt = System.currentTimeMillis() + 60000;
+            while (System.currentTimeMillis() < timeoutAt) {
+                sleep(200);
+                
+                if (System.currentTimeMillis() > timeoutAt) {
+                    fail("app did not restart with 60s");
+                }
+                
+                // this request should eventually be against the reloaded app
+                page = get("/");
+                assertEquals(200, page.getWebResponse().getStatusCode());
+                if (page.asText().contains("restarted")) {
+                    break;
+                }
+            }
 
             assertEquals(200, page.getWebResponse().getStatusCode());
             assertContains("Hello, world!", page.asText());

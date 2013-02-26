@@ -55,8 +55,7 @@ module CommonParams
     unless self.respond_to?(:webapp) && webapp.jruby_home
       # default to the current JRuby
       if defined? JRUBY_VERSION
-        regex = %r{/lib/ruby/site_ruby.*}
-        $:.find { |p| p =~ regex }.gsub(regex, '')
+        JRuby.runtime.jruby_home
       else
         raise "Please set jruby_home for rake task #{self}"
       end
