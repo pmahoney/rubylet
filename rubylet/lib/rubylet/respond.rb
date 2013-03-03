@@ -18,9 +18,12 @@ module Rubylet
         # better to either not have ruby serve static files or to put
         # some cache out front.  See about using the file channel like
         # jruby-rack.
-        write_body(body, resp.getWriter)
+
+        # write_body(body, resp.getOutputStream, &:to_java_bytes)
+        write_body_each_byte(body, resp.getOutputStream)
       else
-        write_body(body, resp.getWriter)
+        # write_body(body, resp.getOutputStream, &:to_java_bytes)
+        write_body_each_byte(body, resp.getOutputStream)
       end
     ensure
       body.close if body.respond_to?(:close) rescue nil
@@ -66,6 +69,24 @@ module Rubylet
     def write_body(body, writer)
       body.each do |part|
         writer.write(block_given? ? yield(part) : part)
+      end
+    end
+
+    # Manually iterate through each byte of the string, writing to the
+    # output stream.  Done to avoid strange error seen only in some
+    # apps (when running a JRuby server that creates its own sub
+    # ScriptingContainers):
+    #
+    #    org.jruby.exceptions.RaiseException: (TypeError) allocator undefined for #<Class:0x6d8fdd40>
+    #      at org.jruby.RubyClass.allocate(org/jruby/RubyClass.java:224)
+    #      at org.jruby.javasupport.JavaArrayUtilities.ruby_string_to_bytes(org/jruby/javasupport/JavaArrayUtilities.java:87)
+    #      at org.jruby.java.addons.StringJavaAddons.to_java_bytes(org/jruby/java/addons/StringJavaAddons.java:11)
+    #      at RUBY.write_body(/Users/pat/dev/rubylet/rubylet/lib/rubylet/respond.rb:72)
+    def write_body_each_byte(body, stream)
+      body.each do |part|
+        part.each_byte do |b|
+          stream.write(b)
+        end
       end
     end
 
