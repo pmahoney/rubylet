@@ -98,7 +98,7 @@ class Rubylet::Environment < Hash
     #
     # @param [javax.servlet.http.HttpServletRequest] req
     def new_as_hash(req)
-      env = new(req)
+      env = wrap(req)
       hash = {}
 
       # load all headers
