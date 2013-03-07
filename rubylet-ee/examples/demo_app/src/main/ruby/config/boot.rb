@@ -1,2 +1,2 @@
-require 'rubylet/servlet'
+require 'rubylet'
 require 'demo/servlet'

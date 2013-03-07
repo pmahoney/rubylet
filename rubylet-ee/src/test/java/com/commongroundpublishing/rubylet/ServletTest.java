@@ -179,7 +179,12 @@ public class ServletTest {
     }
     
     protected HtmlPage get(String uri) throws FailingHttpStatusCodeException, MalformedURLException, IOException {
-        return webClient.getPage("http://localhost:" + PORT + uri);
+        final HtmlPage page = webClient.getPage("http://localhost:" + PORT + uri);
+        if (page.getWebResponse().getStatusCode() >= 500) {
+            System.err.println(page.asText());
+            throw new RuntimeException(page.getWebResponse().getStatusMessage());
+        }
+        return page;
     }
     
     /**

@@ -122,7 +122,7 @@ module Rubylet
           end
           ENV['BUNDLE_WITHOUT'] = 'development:test'
           require 'bundler/setup'
-          require 'rubylet/servlet'
+          require 'rubylet'
           Rubylet::Servlet.new
         EOF
 
