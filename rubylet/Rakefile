@@ -11,19 +11,19 @@ def gemspec
 end
 
 namespace :test do
-  Rake::TestTask.new(:spec) do |t|
+  Rake::TestTask.new(:spec => :compile) do |t|
     t.pattern = 'spec/**/*_spec.rb'
     t.libs.push 'spec'
   end
 
-  Rake::TestTask.new(:integration) do |t|
+  Rake::TestTask.new(:integration => :compile) do |t|
     t.pattern = 'test/it/**/*_it.rb'
     t.libs.push 'test/it'
   end
 end
 
-task :test => [:compile, 'test:spec']
-task :spec => [:compile, 'test:spec']
+task :test => 'test:spec'
+task :spec => 'test:spec'
 task :default => :test
 
 Rake::VersionTask.new
