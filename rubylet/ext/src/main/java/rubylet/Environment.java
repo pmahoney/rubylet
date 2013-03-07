@@ -256,7 +256,7 @@ public final class Environment extends Hash {
              * @see http://rack.rubyforge.org/doc/SPEC.html
              */
             return runtime.getModule("Rubylet").getClass("RewindableIO")
-                    .newInstance(runtime.getCurrentContext(), io, null);
+                    .newInstance(runtime.getCurrentContext(), io, Block.NULL_BLOCK);
         }
         case RACK_MULTIPROCESS:
             return runtime.getFalse();
