@@ -2,4 +2,5 @@ source 'http://rubygems.org'
 gem 'rack', '= 1.4.3'
 gem 'rubylet', :path => '../../../..', :require => false
 gem 'rubylet-jetty', :path => '../../../../../rubylet-jetty', :require => false
+gem 'trinidad'
 

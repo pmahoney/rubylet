@@ -2,6 +2,18 @@ require 'rubylet/session/container_store'
 
 # see http://polycrystal.org/2012/04/15/asynchronous_responses_in_rack.html
 
+class MyServlet
+  def init(servlet_context); end
+
+  def destroy; end
+
+  def service(req, resp)
+    resp.setStatus(200)
+    resp.setHeader 'Content-Type', 'text/plain'
+    resp.getWriter.write 'tests/index hello, world'
+  end
+end
+
 class DeferredBody
   def each(&block)
     # normally we'd yield each part of the body, but since
@@ -44,6 +56,9 @@ class MyApp
       else
         env['rack.session'][$1]
       end
+    when %r{/tests/large/(.*)}
+      size = $1.to_i
+      'a' * size
     when %r{/tests/delay}
       # simple delayed response using async
       cb = env['async.callback']

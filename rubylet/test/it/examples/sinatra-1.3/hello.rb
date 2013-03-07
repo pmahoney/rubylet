@@ -34,6 +34,10 @@ get '/tests/log' do
   logger.info 'log requested'
 end
 
+get '/tests/large/:size' do
+  'a' * params[:size].to_i
+end
+
 # Hey Sinatra, we support async.callback without EventMachine!
 require 'thread'
 module EventMachine

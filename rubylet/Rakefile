@@ -22,11 +22,24 @@ namespace :test do
   end
 end
 
-task :test => 'test:spec'
-task :spec => 'test:spec'
+task :test => [:compile, 'test:spec']
+task :spec => [:compile, 'test:spec']
+task :default => :test
 
 Rake::VersionTask.new
+
+ext = File.expand_path('../ext', __FILE__)
+ext_jar = File.expand_path('../lib/rubylet/ext.jar', __FILE__)
+
+file ext_jar => Dir[File.join(ext, 'src/main/java/**/*.java')] do
+  Dir.chdir(ext) do
+    system 'mvn verify'
+  end
+end
+
+task :compile => ext_jar
 
 Gem::PackageTask.new(gemspec) do |p|
   p.gem_spec = gemspec
 end
+task :package => ext_jar

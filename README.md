@@ -11,7 +11,7 @@ applications (Rails, Sinatra, others) inside Java Servlet containers
 rubylet
 -------
 
-A pure Ruby implementation of the Java Servlet API that forwards to a
+An implementation of the Java Servlet API that forwards to a
 contained Rack application as an alternative to
 [JRuby-Rack](https://github.com/jruby/jruby-rack).
 

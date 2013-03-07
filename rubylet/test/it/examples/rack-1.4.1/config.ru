@@ -44,6 +44,9 @@ class MyApp
       else
         env['rack.session'][$1]
       end
+    when %r{/tests/large/(.*)}
+      size = $1.to_i
+      'a' * size
     when %r{/tests/delay}
       # simple delayed response using async
       cb = env['async.callback']

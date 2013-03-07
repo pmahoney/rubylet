@@ -8,6 +8,7 @@ Gem::Specification.new do |s|
   s.summary     = 'Java Servlet implementation that forwards to Rack application'
   s.files       = Dir['VERSION',
                       'MIT-LICENSE',
+                      'lib/rubylet/ext.jar',
                       'lib/**/*.rb',
                       'spec/**/*.rb']
 

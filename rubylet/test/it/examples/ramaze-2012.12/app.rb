@@ -30,4 +30,10 @@ class TestsController < Controller
   def log
     "i didn't actually log anything"
   end
+
+  set_layout 'plain' => [:large]
+
+  def large(size)
+    'a' * size.to_i
+  end
 end

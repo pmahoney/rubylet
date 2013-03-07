@@ -156,6 +156,12 @@ module Rubylet
       assert_match 'tests/index', resp.body
     end
 
+    def test_large_get
+      resp = get('tests/large/10000')
+      assert_equal 200, resp.code.to_i
+      assert_equal 10000, resp.body.size
+    end
+
     def test_store_in_session
       resp = get('session_values/testkey')
       assert_equal 200, resp.code.to_i

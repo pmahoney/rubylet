@@ -58,8 +58,8 @@ class RubyletHelper
     end
     
     if config.servlet_class == 'Rubylet::Servlet'
-      logger.debug "require 'rubylet/servlet'"
-      require 'rubylet/servlet'
+      logger.debug "require 'rubylet'"
+      require 'rubylet'
     end 
   end
     

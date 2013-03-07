@@ -54,6 +54,9 @@ class MyApp
       end
       
       throw :async
+    when %r{/tests/large/(.*)}
+      size = $1.to_i
+      txt('a' * size)
     when %r{/tests/stream}
       # streamed body
       cb = env['async.callback']
