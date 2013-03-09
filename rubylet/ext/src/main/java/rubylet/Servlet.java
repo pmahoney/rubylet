@@ -12,9 +12,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
-import org.jruby.RubyFixnum;
 import org.jruby.RubyHash;
 import org.jruby.RubyModule;
+import org.jruby.RubyNumeric;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
@@ -134,7 +134,7 @@ public final class Servlet extends RubyObject implements javax.servlet.Servlet {
     private AsyncCallback getAsyncCallback(ThreadContext context, Environment env) {
         return (AsyncCallback) env.op_aref(context, asyncCallbackKey);
     }
-
+    
     @Override
     public void service(ServletRequest _req, ServletResponse _resp)
             throws ServletException, IOException
@@ -160,12 +160,12 @@ public final class Servlet extends RubyObject implements javax.servlet.Servlet {
             // response is a Rack response [status, headers, body]
             final RubyArray ary = response.convertToArray();
             
-            final int status = ((Long) ary.get(0)).intValue();
+            final int status = RubyNumeric.fix2int(ary.entry(0));
             if (status == -1) {
                 getAsyncCallback(context, env).ensureStarted();
             } else {
-                final RubyHash headers = ary.aref(RubyFixnum.one(getRuntime())).convertToHash();
-                final IRubyObject body = ary.aref(RubyFixnum.two(getRuntime()));
+                final RubyHash headers = ary.entry(1).convertToHash();
+                final IRubyObject body = ary.entry(2);
 
                 final ResponseHelper wrappedResp = new ResponseHelper(resp, this, getMetaClass());
                 wrappedResp.respond(context, status, headers, body);
