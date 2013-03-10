@@ -22,6 +22,12 @@ module Rubylet
   OPTIONS = 'OPTIONS'.freeze
   HEAD    = 'HEAD'.freeze
 
+  # common http headers
+  HTTP_ACCEPT     = 'HTTP_ACCEPT'.freeze
+  HTTP_CONNECTION = 'HTTP_CONNECTION'.freeze
+  HTTP_HOST       = 'HTTP_HOST'.freeze
+  HTTP_USER_AGENT = 'HTTP_USER_AGENT'.freeze
+
   ASYNC_THROWN = Object.new.freeze
 
   # Extension for Servlet since I don't know how to catch/throw on the

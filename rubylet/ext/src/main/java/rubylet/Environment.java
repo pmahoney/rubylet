@@ -150,32 +150,60 @@ public final class Environment extends Hash {
         addHeaders(req);
     }
     
+    private static final String RACK_PREFIX = "HTTP_";
+
+    private static final int RACK_PREFIX_LEN = RACK_PREFIX.length();
+
+    private String toRackHeader(String str) {
+        final StringBuilder buf =
+                new StringBuilder(str.length() + RACK_PREFIX_LEN);
+        buf.append(RACK_PREFIX);
+        
+        for(int i = 0, n = str.length() ; i < n ; i++) { 
+            final char c = str.charAt(i);
+            if (c == '-') {
+                buf.append("_");
+            } else {
+                buf.append(Character.toUpperCase(c));
+            }
+        }
+        
+        return buf.toString();
+    }
+    
+    private IRubyObject getRackHeader(String str) {
+        // test for some common headers
+        if ("Content-Length".equals(str)) {
+            return getRuntime().getModule("Rubylet").getConstant("CONTENT_LENGTH");
+        } else if ("Content-Type".equals(str)) {
+            return getRuntime().getModule("Rubylet").getConstant("CONTENT_TYPE");
+        } else if ("Host".equals(str)) {
+            return getRuntime().getModule("Rubylet").getConstant("HTTP_HOST");
+        } else if ("Accept".equals(str)) {
+            return getRuntime().getModule("Rubylet").getConstant("HTTP_ACCEPT");
+        } else if ("User-Agent".equals(str)) {
+            return getRuntime().getModule("Rubylet").getConstant("HTTP_USER_AGENT");
+        } else if ("Connection".equals(str)) {
+            return getRuntime().getModule("Rubylet").getConstant("HTTP_CONNECTION");
+        } else {
+            return getRuntime().newString(toRackHeader(str));
+        }
+    }
+    
     /**
      * Add each HTTP header in {@code req} into the hash, translating
      * Servlet header names to their Rack equivalents.
      * 
      * @param req
      */
-    private final void addHeaders(HttpServletRequest req) {
+    private void addHeaders(HttpServletRequest req) {
         final Ruby runtime = getRuntime();
         final Enumeration<String> names = req.getHeaderNames();
         while (names.hasMoreElements()) {
             final String name = names.nextElement();
             
-            final IRubyObject key;
-            final IRubyObject value;
-            
-            if (name.equalsIgnoreCase("Content-Length")) {
-                key   = runtime.getModule("Rubylet").getConstant("CONTENT_LENGTH");
-                value = runtime.newString(req.getHeader(name));
-            } else if (name.equalsIgnoreCase("Content-Type")) {
-                key   = runtime.getModule("Rubylet").getConstant("CONTENT_TYPE");
-                value = runtime.newString(req.getHeader(name));
-            } else {
-                key   = runtime.newString("HTTP_" +
-                                          name.toUpperCase().replaceAll("-", "_"));
-                value = runtime.newString(req.getHeader(name));
-            }
+            final IRubyObject key   = getRackHeader(name);
+            final IRubyObject value = runtime.newString(req.getHeader(name));
             
             put(key, value);
         }
