@@ -81,14 +81,15 @@ public final class AsyncCallback extends RubyObject {
     
     private final HttpServletRequest req;
     
-    private final IRubyObject asyncComplete;
-    
     private AsyncContext asyncContext;
 
     public AsyncCallback(Ruby runtime, RubyClass klass, HttpServletRequest req) {
         super(runtime, klass);
         this.req = req;
-        this.asyncComplete = runtime.getModule("Rubylet")
+    }
+    
+    private IRubyObject asyncComplete() {
+        return getRuntime().getModule("Rubylet")
                 .getClass("AsyncCallback")
                 .getConstant("ASYNC_COMPLETE");
     }
@@ -110,7 +111,7 @@ public final class AsyncCallback extends RubyObject {
     public IRubyObject call(ThreadContext context, IRubyObject response) throws IOException {
         ensureStarted();
         
-        if (asyncComplete.eql(response)) {
+        if (asyncComplete().eql(response)) {
             asyncContext.complete();
         } else {
             final ResponseHelper resp = new ResponseHelper(getResponse(), this, getMetaClass());
