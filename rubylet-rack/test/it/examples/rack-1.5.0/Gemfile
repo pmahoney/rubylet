@@ -1,0 +1,5 @@
+source 'http://rubygems.org'
+gem 'rack', '= 1.5.0'
+gem 'rubylet-rack', :path => '../../../..'
+gem 'rubylet-rack-handler', :path => '../../../../../rubylet-rack-handler'
+
