@@ -11,7 +11,6 @@ MiniAether.setup do
 end
 
 require 'rubylet/rack'
-require 'rubylet/static_file_filter'
 
 module Rubylet; module Rack; module Handler; end; end; end
 
