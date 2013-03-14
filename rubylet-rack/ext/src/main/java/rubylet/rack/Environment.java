@@ -3,14 +3,12 @@ package rubylet.rack;
 import static rubylet.rack.Rubylet.defineConstant;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Enumeration;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
-import org.jruby.RubyHash;
 import org.jruby.RubyIO;
 import org.jruby.RubyModule;
 import org.jruby.RubyString;
