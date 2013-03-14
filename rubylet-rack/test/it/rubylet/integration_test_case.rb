@@ -122,8 +122,8 @@ module Rubylet
           end
           ENV['BUNDLE_WITHOUT'] = 'development:test'
           require 'bundler/setup'
-          require 'rubylet'
-          Rubylet::Servlet.new
+          require 'rubylet/rack'
+          Rubylet::Rack::Servlet.new
         EOF
 
         # we have the servlet; now setup jetty

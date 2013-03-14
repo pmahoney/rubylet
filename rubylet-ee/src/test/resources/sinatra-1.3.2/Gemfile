@@ -1,5 +1,5 @@
 source 'http://rubygems.org'
 
 gem 'sinatra', '1.3.2'
-gem 'rubylet', :path => '../../../../rubylet'
+gem 'rubylet-rack', :path => '../../../../rubylet-rack'
 

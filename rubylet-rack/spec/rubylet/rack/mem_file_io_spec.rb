@@ -1,7 +1,7 @@
 require 'spec_helper'
-require 'rubylet/mem_file_io'
+require 'rubylet/rack/mem_file_io'
 
-module Rubylet
+module Rubylet::Rack
 
   describe MemFileIO do
     

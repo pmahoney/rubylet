@@ -3,12 +3,14 @@ package rubylet.rack;
 import static rubylet.rack.Rubylet.defineConstant;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Enumeration;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
+import org.jruby.RubyHash;
 import org.jruby.RubyIO;
 import org.jruby.RubyModule;
 import org.jruby.RubyString;
@@ -60,6 +62,12 @@ public final class Environment extends Hash {
             this.name = name;
         }
         
+        /**
+         * The name of this Key is the ruby string that will be a key in the
+         * environment hash.
+         * 
+         * @return
+         */
         public String getName() {
             return name;
         }

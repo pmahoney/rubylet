@@ -8,10 +8,10 @@ run() {
   popd
 }
 
-run rubylet bundle install
-run rubylet jruby -G -S rake test:spec
+run rubylet-rack bundle install
+run rubylet-rack jruby -G -S rake test:spec
 # run these one by one to avoid oom on travis
-pushd rubylet
+pushd rubylet-rack
 for test in test/it/*_it.rb; do
     echo "=== $test" 
     jruby -G -S rake test:integration TEST="$test" || exit 1

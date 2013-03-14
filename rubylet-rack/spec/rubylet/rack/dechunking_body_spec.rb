@@ -1,7 +1,7 @@
 require 'spec_helper'
-require 'rubylet/dechunking_body'
+require 'rubylet/rack/dechunking_body'
 
-module Rubylet
+module Rubylet::Rack
   describe DechunkingBody do
     def chunk(strs)
       strs.map do |str|

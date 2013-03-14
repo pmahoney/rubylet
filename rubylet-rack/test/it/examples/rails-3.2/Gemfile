@@ -1,8 +1,8 @@
 source 'https://rubygems.org'
-gem 'rubylet', :path => '../../../..', :require => false
+gem 'rubylet-rack', :path => '../../../..', :require => false
 gem 'rails', '~> 3.2.0'
 gem 'jruby-openssl'
 gem 'json'
 
 # used for development
-gem 'rubylet-jetty', :path => '../../../../../rubylet-jetty', :require => false
+gem 'rubylet-rack-handler', :path => '../../../../../rubylet-rack-handler', :require => false

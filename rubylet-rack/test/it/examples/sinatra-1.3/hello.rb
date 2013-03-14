@@ -1,10 +1,10 @@
 require 'sinatra'
-require 'rubylet/session/container_store'
+require 'rubylet/rack/session/container_store'
 
 $started_at = "#{Time.now} (rand:#{rand(10000)})"
 
 disable :logging
-use Rubylet::Session::ContainerStore
+use Rubylet::Rack::Session::ContainerStore
 
 get '/' do
   "tests/index: Hello, world! - from Sinatra"

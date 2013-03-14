@@ -1,8 +1,8 @@
 require 'spec_helper'
-require 'rubylet/tee_io'
+require 'rubylet/rack/tee_io'
 require 'stringio'
 
-module Rubylet
+module Rubylet::Rack
 
   describe TeeIO do
 

@@ -1,8 +1,8 @@
 require 'spec_helper'
-require 'rubylet/rewindable_io'
+require 'rubylet/rack/rewindable_io'
 require 'stringio'
 
-module Rubylet
+module Rubylet::Rack
 
   describe RewindableIO do
     

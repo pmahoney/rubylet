@@ -1,4 +1,4 @@
-require 'rubylet/session/container_store'
+require 'rubylet/rack/session/container_store'
 
 # see http://polycrystal.org/2012/04/15/asynchronous_responses_in_rack.html
 
@@ -94,5 +94,5 @@ class MyApp
   end
 end
 
-use Rubylet::Session::ContainerStore
+use Rubylet::Rack::Session::ContainerStore
 run MyApp.new

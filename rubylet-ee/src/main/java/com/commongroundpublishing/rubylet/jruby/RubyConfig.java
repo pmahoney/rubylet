@@ -268,7 +268,7 @@ public class RubyConfig {
      * @return the configured Ruby class to instantiate as {@link javax.servlet.Servlet}
      */
     public final String getServletClass() {
-        return get("rubylet.servletClass", "Rubylet::Servlet");
+        return get("rubylet.servletClass", "Rubylet::Rack::Servlet");
     }
 
     /**

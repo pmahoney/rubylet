@@ -57,9 +57,9 @@ class RubyletHelper
       load File.join(Dir.pwd, config.boot)
     end
     
-    if config.servlet_class == 'Rubylet::Servlet'
-      logger.debug "require 'rubylet'"
-      require 'rubylet'
+    if config.servlet_class == 'Rubylet::Rack::Servlet'
+      logger.debug "require 'rubylet/rack'"
+      require 'rubylet/rack'
     end 
   end
     

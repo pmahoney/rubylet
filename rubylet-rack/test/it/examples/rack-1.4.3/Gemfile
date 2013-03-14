@@ -1,6 +1,6 @@
 source 'http://rubygems.org'
 gem 'rack', '= 1.4.3'
-gem 'rubylet', :path => '../../../..', :require => false
-gem 'rubylet-jetty', :path => '../../../../../rubylet-jetty', :require => false
+gem 'rubylet-rack', :path => '../../../..', :require => false
+gem 'rubylet-rack-handler', :path => '../../../../../rubylet-rack-handler', :require => false
 gem 'trinidad'
 
