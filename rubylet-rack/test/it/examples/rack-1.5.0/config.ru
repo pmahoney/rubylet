@@ -101,7 +101,7 @@ class MyApp
   end
 end
 
-# use Rack::Lint
-# use Rubylet::Rack::Session::ContainerStore
-# use Rack::Lint
+use Rack::Lint
+use Rubylet::Rack::Session::ContainerStore
+use Rack::Lint
 run MyApp.new
