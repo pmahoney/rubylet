@@ -8,29 +8,29 @@ A collection of Ruby and Java code to support running Rack
 applications (Rails, Sinatra, others) inside Java Servlet containers
 (Jetty, others).
 
-rubylet
--------
+rubylet-rack
+------------
 
 An implementation of the Java Servlet API that forwards to a
 contained Rack application as an alternative to
 [JRuby-Rack](https://github.com/jruby/jruby-rack).
 
-rubylet-jetty
--------------
+rubylet-rack-handler
+-------------------
 
-A simple `Rack::Handler` using `rubylet` and
+A simple `Rack::Handler` using `rubylet-rack` and
 [Jetty](http://eclipse.org/jetty) as the servlet container. Meant for
 testing and development purposes only.
 
 With a standard `config.ru`, and a `public` folder, the following will
 load the rack application and serve static files directly from Jetty:
 
-    rackup -s rack/jetty
+    rackup -s rubylet
 
 rubylet-ee
 ----------
 
-A Java wrapper around `rubylet` that can be deployed in a WAR file to
+A Java wrapper around `rubylet-rack` that can be deployed in a WAR file to
 a Java EE server.
 
 * Works in WAR files
