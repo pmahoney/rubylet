@@ -1,4 +1,4 @@
-source :rubygems
+source 'https://rubygems.org'
 gem 'ramaze', '2012.12.08'
 gem 'rubylet-rack', :path => '../../../..', :require => false
 gem 'rubylet-rack-handler', :path => '../../../../../rubylet-rack-handler', :require => false
