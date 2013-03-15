@@ -15,6 +15,16 @@ An implementation of the Java Servlet API that forwards to a
 contained Rack application as an alternative to
 [JRuby-Rack](https://github.com/jruby/jruby-rack).
 
+    # Java Servlet classes must be available before loading 'rubylet/rack'
+
+    require 'rubylet/rack'
+
+    app = build_my_rack_application()
+    servlet = Rubylet::Rack::Servlet.new(app)
+
+    # hand the servlet off to a Java Servlet container
+
+
 rubylet-rack-handler
 -------------------
 
