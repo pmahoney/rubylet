@@ -181,6 +181,27 @@ public final class Environment extends Hash {
         addHeaders(req);
     }
     
+    public void populateFromEmpty(HttpServletRequest req) throws IOException {
+        final Ruby runtime = getRuntime();
+        
+        for (Key key : Key.values()) {
+            final IRubyObject rubyKey = getConstant(key.toString());
+            final IRubyObject rubyValue = fetch(runtime, key, req);
+            put(rubyKey, rubyValue);
+        }
+        
+        // miscellaneous keys that are not allowed to be 'nil' by Rack, grumble
+        {
+            final String remoteUser = req.getRemoteUser();
+            if (remoteUser != null) {
+                final IRubyObject key = getConstant("REMOTE_USER");
+                put(key, runtime.newString(remoteUser));
+            }
+        }
+        
+        addHeaders(req);
+    }
+    
     private static final String RACK_PREFIX = "HTTP_";
 
     private static final int RACK_PREFIX_LEN = RACK_PREFIX.length();
@@ -202,7 +223,7 @@ public final class Environment extends Hash {
         return buf.toString();
     }
     
-    private IRubyObject getRackHeader(String str) {
+    private IRubyObject getRackHeader(Ruby runtime, String str) {
         // test for some common headers
              if ("Content-Length".equals(str)) { return getConstant("CONTENT_LENGTH"); }
         else if ("Content-Type".equals(str))   { return getConstant("CONTENT_TYPE"); }
@@ -210,7 +231,7 @@ public final class Environment extends Hash {
         else if ("Accept".equals(str))         { return getConstant("HTTP_ACCEPT"); }
         else if ("User-Agent".equals(str))     { return getConstant("HTTP_USER_AGENT"); }
         else if ("Connection".equals(str))     { return getConstant("HTTP_CONNECTION"); }
-        else { return getRuntime().newString(toRackHeader(str)); }
+        else { return runtime.newString(toRackHeader(str)); }
     }
     
     /**
@@ -225,7 +246,7 @@ public final class Environment extends Hash {
         while (names.hasMoreElements()) {
             final String name = names.nextElement();
             
-            final IRubyObject key   = getRackHeader(name);
+            final IRubyObject key   = getRackHeader(runtime, name);
             final IRubyObject value = runtime.newString(req.getHeader(name));
             
             put(key, value);
