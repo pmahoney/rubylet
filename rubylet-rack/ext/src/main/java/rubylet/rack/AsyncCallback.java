@@ -122,7 +122,7 @@ public final class AsyncCallback extends RubyObject {
             if (status > 0) {
                 // first call to callback sends the headers immediately
                 final RubyHash headers = ary.aref(RubyFixnum.one(getRuntime())).convertToHash();
-                resp.setHeaders(asyncContext.getResponse(), status, headers);
+                resp.setHeaders(status, headers);
                 resp.flush();
                 
                 if (body.respondsTo("callback")) {

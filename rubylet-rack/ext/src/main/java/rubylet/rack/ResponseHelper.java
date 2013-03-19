@@ -49,7 +49,7 @@ public final class ResponseHelper {
                         IRubyObject body)
             throws IOException
     {
-        setHeaders(resp, status, headers);
+        setHeaders(status, headers);
         
         /*
          * Rails likes to manually chunk the response body.  Servlet container
@@ -84,11 +84,7 @@ public final class ResponseHelper {
         resp.flushBuffer();
     }
 
-    public void setHeaders(ServletResponse resp, int status, RubyHash headers) {
-        setHeaders((HttpServletResponse) resp, status, headers);
-    }
-
-    public void setHeaders(final HttpServletResponse resp, int status, RubyHash headers) {
+    public void setHeaders(int status, RubyHash headers) {
         resp.setStatus(status);
     
         headers.visitAll(new Visitor() {
