@@ -1,7 +1,6 @@
 source 'https://rubygems.org'
 gem 'rubylet-rack', :path => '../../../..', :require => false
 gem 'rails', '~> 3.2.0'
-gem 'jruby-openssl'
 gem 'json'
 
 # used for development

@@ -118,7 +118,7 @@ module Rubylet
             puts "----- bundle install"
             require 'bundler'
             require 'bundler/cli'
-            Bundler::CLI.new([], :quiet => true).invoke(:install)
+            Bundler::CLI.start(['install', '--quiet'])
           end
           ENV['BUNDLE_WITHOUT'] = 'development:test'
           require 'bundler/setup'
