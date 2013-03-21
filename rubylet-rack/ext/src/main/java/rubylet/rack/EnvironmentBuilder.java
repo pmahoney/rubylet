@@ -50,6 +50,13 @@ public final class EnvironmentBuilder {
     private final RubyString SERVER_PROTOCOL;
     private final RubyString SERVER_SOFTWARE;
     
+    private final RubyString GET;
+    private final RubyString POST;
+    private final RubyString PUT;
+    private final RubyString OPTIONS;
+    private final RubyString HEAD;
+    private final RubyString DELETE;
+    
     private final RubyClass cRewindableIO;
     
     public EnvironmentBuilder(Ruby runtime) {
@@ -82,6 +89,13 @@ public final class EnvironmentBuilder {
         SERVER_PORT = frozenString("SERVER_PORT");
         SERVER_PROTOCOL = frozenString("SERVER_PROTOCOL");
         SERVER_SOFTWARE = frozenString("SERVER_SOFTWARE");
+        
+        GET = frozenString("GET");
+        POST = frozenString("POST");
+        PUT = frozenString("PUT");
+        HEAD = frozenString("HEAD");
+        OPTIONS = frozenString("OPTIONS");
+        DELETE = frozenString("DELETE");
     }
 
     
@@ -152,17 +166,16 @@ public final class EnvironmentBuilder {
     }
     
     private IRubyObject getRequestMethod(HttpServletRequest req) {
-        return runtime.newString(req.getMethod());
-        /*
-        // TODO what about methods for which we haven't defined constants. does this work?
         final String method = req.getMethod();
-        final IRubyObject val = getConstant(method);
-        if (val.isNil()) {
-            return runtime.newString(method);
-        } else {
-            return val;
+             if ("GET".equals(method)) { return GET; }
+        else if ("POST".equals(method)) { return POST; }
+        else if ("PUT".equals(method)) { return PUT; }
+        else if ("HEAD".equals(method)) { return HEAD; }
+        else if ("DELETE".equals(method)) { return DELETE; }
+        else if ("OPTIONS".equals(method)) { return OPTIONS; }
+        else {
+            return runtime.newString(req.getMethod());
         }
-        */
     }
 
     private IRubyObject getRequestUri(HttpServletRequest req) {
