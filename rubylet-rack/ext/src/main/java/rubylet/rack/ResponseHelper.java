@@ -3,7 +3,6 @@ package rubylet.rack;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jruby.RubyHash;
@@ -31,6 +30,9 @@ public final class ResponseHelper {
      */
     public static final IRubyObject[] ARGS_NONE = new IRubyObject[0];
     
+    
+    private final Constants constants; 
+    
     private final HttpServletResponse resp;
     
     private final IRubyObject self;
@@ -38,6 +40,7 @@ public final class ResponseHelper {
     private final RubyModule imClass;
     
     public ResponseHelper(HttpServletResponse resp, IRubyObject self, RubyModule imClass) {
+        this.constants = Constants.getInstance(self.getRuntime());
         this.resp = resp;
         this.self = self;
         this.imClass = imClass;
@@ -57,15 +60,10 @@ public final class ResponseHelper {
          * We have to de-chunk because servlet container can't handle
          * pre-chunked data.
          */
-        final IRubyObject transferEncoding = Rubylet.getConstant(context.getRuntime(),
-                                                                 "TRANSFER_ENCODING");
         final IRubyObject value =
-                headers.delete(context, transferEncoding, Block.NULL_BLOCK);
+                headers.delete(context, constants.TRANSFER_ENCODING, Block.NULL_BLOCK);
         if (!value.isNil() && value.toString().equals("chunked")) {
-            body = context.getRuntime()
-                    .getModule("Rubylet")
-                    .defineOrGetModuleUnder("Rack")
-                    .getClass("DechunkingBody")
+            body = constants.cDechunkingBody
                     .newInstance(context, body, Block.NULL_BLOCK);
         }
 

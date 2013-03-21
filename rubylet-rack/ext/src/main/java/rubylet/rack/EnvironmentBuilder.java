@@ -19,83 +19,11 @@ public final class EnvironmentBuilder {
 
     private final Ruby runtime;
     
-    private RubyString frozenString(String str) {
-        final RubyString rbStr = runtime.newString(str);
-        rbStr.freeze(runtime.getCurrentContext());
-        return rbStr;
-    }
-    
-    // yes, these are instance vars that look like constants.
-    //private final RubyString ASYNC_CALLBACK = frozenString("async.callback");
-    private final RubyString JAVA_SERVLET_REQUEST;
-    private final RubyString PATH_INFO;
-    private final RubyString QUERY_STRING;
-    private final RubyString RACK_ERRORS;
-    private final RubyString RACK_INPUT;
-    private final RubyString RACK_MULTIPROCESS;
-    private final RubyString RACK_MULTITHREAD;
-    private final RubyString RACK_RUN_ONCE;
-    private final RubyString RACK_URL_SCHEME;
-    private final RubyString RACK_VERSION;
-    private final RubyString REMOTE_ADDR;
-    private final RubyString REMOTE_HOST;
-    private final RubyString REMOTE_PORT;
-    private final RubyString REMOTE_USER;
-    private final RubyString REQUEST_METHOD;
-    private final RubyString REQUEST_PATH;
-    private final RubyString REQUEST_URI;
-    private final RubyString SCRIPT_NAME;
-    private final RubyString SERVER_NAME;
-    private final RubyString SERVER_PORT;
-    private final RubyString SERVER_PROTOCOL;
-    private final RubyString SERVER_SOFTWARE;
-    
-    private final RubyString GET;
-    private final RubyString POST;
-    private final RubyString PUT;
-    private final RubyString OPTIONS;
-    private final RubyString HEAD;
-    private final RubyString DELETE;
-    
-    private final RubyClass cRewindableIO;
+    private final Constants c;
     
     public EnvironmentBuilder(Ruby runtime) {
         this.runtime = runtime;
-        
-        cRewindableIO = runtime
-                .getModule("Rubylet")
-                .defineModuleUnder("Rack")
-                .getClass("RewindableIO");
-        
-        JAVA_SERVLET_REQUEST = frozenString("java.servlet_request");
-        PATH_INFO = frozenString("PATH_INFO");
-        QUERY_STRING = frozenString("QUERY_STRING");
-        RACK_ERRORS = frozenString("rack.errors");
-        RACK_INPUT = frozenString("rack.input");
-        RACK_MULTIPROCESS = frozenString("rack.multiprocess");
-        RACK_MULTITHREAD = frozenString("rack.multithread");
-        RACK_RUN_ONCE = frozenString("rack.run_once");
-        RACK_URL_SCHEME = frozenString("rack.url_scheme");
-        RACK_VERSION = frozenString("rack.version");
-        REMOTE_ADDR = frozenString("REMOTE_ADDR");
-        REMOTE_HOST = frozenString("REMOTE_HOST");
-        REMOTE_PORT = frozenString("REMOTE_PORT");
-        REMOTE_USER = frozenString("REMOTE_USER");
-        REQUEST_METHOD = frozenString("REQUEST_METHOD");
-        REQUEST_PATH = frozenString("REQUEST_PATH");
-        REQUEST_URI = frozenString("REQUEST_URI");
-        SCRIPT_NAME = frozenString("SCRIPT_NAME");
-        SERVER_NAME = frozenString("SERVER_NAME");
-        SERVER_PORT = frozenString("SERVER_PORT");
-        SERVER_PROTOCOL = frozenString("SERVER_PROTOCOL");
-        SERVER_SOFTWARE = frozenString("SERVER_SOFTWARE");
-        
-        GET = frozenString("GET");
-        POST = frozenString("POST");
-        PUT = frozenString("PUT");
-        HEAD = frozenString("HEAD");
-        OPTIONS = frozenString("OPTIONS");
-        DELETE = frozenString("DELETE");
+        this.c = Constants.getInstance(runtime);
     }
 
     
@@ -160,19 +88,19 @@ public final class EnvironmentBuilder {
          * 
          * @see http://rack.rubyforge.org/doc/SPEC.html
          */
-        return cRewindableIO.newInstance(runtime.getCurrentContext(),
-                                         io,
-                                         Block.NULL_BLOCK);
+        return c.cRewindableIO.newInstance(runtime.getCurrentContext(),
+                                           io,
+                                           Block.NULL_BLOCK);
     }
     
     private IRubyObject getRequestMethod(HttpServletRequest req) {
         final String method = req.getMethod();
-             if ("GET".equals(method)) { return GET; }
-        else if ("POST".equals(method)) { return POST; }
-        else if ("PUT".equals(method)) { return PUT; }
-        else if ("HEAD".equals(method)) { return HEAD; }
-        else if ("DELETE".equals(method)) { return DELETE; }
-        else if ("OPTIONS".equals(method)) { return OPTIONS; }
+             if ("GET".equals(method)) { return c.GET; }
+        else if ("POST".equals(method)) { return c.POST; }
+        else if ("PUT".equals(method)) { return c.PUT; }
+        else if ("HEAD".equals(method)) { return c.HEAD; }
+        else if ("DELETE".equals(method)) { return c.DELETE; }
+        else if ("OPTIONS".equals(method)) { return c.OPTIONS; }
         else {
             return runtime.newString(req.getMethod());
         }
@@ -192,32 +120,32 @@ public final class EnvironmentBuilder {
     public RubyHash newEnvironmentHash(HttpServletRequest req) throws IOException {
         final RubyHash env = RubyHash.newHash(runtime);
         
-        env.put(JAVA_SERVLET_REQUEST,
+        env.put(c.JAVA_SERVLET_REQUEST,
                 JavaUtil.convertJavaToUsableRubyObject(runtime, req));
         
-        env.put(PATH_INFO, getPathInfo(req));
+        env.put(c.PATH_INFO, getPathInfo(req));
         
-        env.put(QUERY_STRING, stringOrEmpty(req.getQueryString()));
+        env.put(c.QUERY_STRING, stringOrEmpty(req.getQueryString()));
         
-        env.put(RACK_ERRORS, newRackErrors(req));
+        env.put(c.RACK_ERRORS, newRackErrors(req));
 
-        env.put(RACK_INPUT, newRackInput(req));
+        env.put(c.RACK_INPUT, newRackInput(req));
 
-        env.put(RACK_MULTIPROCESS, runtime.getFalse());
-        env.put(RACK_MULTITHREAD, runtime.getTrue());
-        env.put(RACK_RUN_ONCE, runtime.getFalse());
+        env.put(c.RACK_MULTIPROCESS, runtime.getFalse());
+        env.put(c.RACK_MULTITHREAD, runtime.getTrue());
+        env.put(c.RACK_RUN_ONCE, runtime.getFalse());
         
-        env.put(RACK_URL_SCHEME, stringOrNull(req.getScheme()));
+        env.put(c.RACK_URL_SCHEME, stringOrNull(req.getScheme()));
 
-        env.put(RACK_VERSION, runtime.getModule("Rack").getConstant("VERSION"));
+        env.put(c.RACK_VERSION, runtime.getModule("Rack").getConstant("VERSION"));
         
-        env.put(REMOTE_ADDR, runtime.newString(req.getRemoteAddr()));
-        env.put(REMOTE_HOST, runtime.newString(req.getRemoteHost()));
-        env.put(REMOTE_PORT, runtime.newString(Integer.toString(req.getRemotePort())));
-        env.put(REQUEST_METHOD, getRequestMethod(req));
+        env.put(c.REMOTE_ADDR, runtime.newString(req.getRemoteAddr()));
+        env.put(c.REMOTE_HOST, runtime.newString(req.getRemoteHost()));
+        env.put(c.REMOTE_PORT, runtime.newString(Integer.toString(req.getRemotePort())));
+        env.put(c.REQUEST_METHOD, getRequestMethod(req));
 
-        env.put(REQUEST_PATH, stringOrNull(req.getPathInfo()));
-        env.put(REQUEST_URI, getRequestUri(req));
+        env.put(c.REQUEST_PATH, stringOrNull(req.getPathInfo()));
+        env.put(c.REQUEST_URI, getRequestUri(req));
         
         /*
          * context path joined with servlet_path, but not nil and empty
@@ -226,19 +154,19 @@ public final class EnvironmentBuilder {
          * context returns empty string).  Similarly, servlet_path will be
          * the empty string (for '/*' matches) or '/<path>'.
          */
-        env.put(SCRIPT_NAME, 
+        env.put(c.SCRIPT_NAME, 
                 runtime.newString(req.getContextPath() + req.getServletPath()));
         
-        env.put(SERVER_NAME, stringOrNull(req.getServerName()));
-        env.put(SERVER_PORT, stringOrNull(Integer.toString(req.getServerPort())));
-        env.put(SERVER_PROTOCOL, stringOrNull(req.getProtocol()));
-        env.put(SERVER_SOFTWARE, stringOrNull(req.getServletContext().getServerInfo()));
+        env.put(c.SERVER_NAME, stringOrNull(req.getServerName()));
+        env.put(c.SERVER_PORT, stringOrNull(Integer.toString(req.getServerPort())));
+        env.put(c.SERVER_PROTOCOL, stringOrNull(req.getProtocol()));
+        env.put(c.SERVER_SOFTWARE, stringOrNull(req.getServletContext().getServerInfo()));
 
         // miscellaneous keys that are not allowed to be 'nil' by Rack, grumble
         {
             final String remoteUser = req.getRemoteUser();
             if (remoteUser != null) {
-                env.put(REMOTE_USER, runtime.newString(remoteUser));
+                env.put(c.REMOTE_USER, runtime.newString(remoteUser));
             }
         }
         

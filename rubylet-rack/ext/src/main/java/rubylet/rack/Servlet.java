@@ -51,10 +51,8 @@ public final class Servlet extends RubyObject implements javax.servlet.Servlet {
         
     };
 
+    private final Constants constants;
     private final EnvironmentBuilder envBuilder;
-    private final RubyClass cAsyncCallback;
-    private final IRubyObject asyncCallbackKey;
-    private final IRubyObject symAsync;
     
     private IRubyObject app;
     private ServletConfig servletConfig;
@@ -62,10 +60,8 @@ public final class Servlet extends RubyObject implements javax.servlet.Servlet {
     public Servlet(Ruby runtime, RubyClass klass) {
         super(runtime, klass);
         
+        constants = Constants.getInstance(runtime);
         envBuilder = new EnvironmentBuilder(runtime);
-        cAsyncCallback = runtime.getModule("Rubylet").defineOrGetModuleUnder("Rack").getClass("AsyncCallback");
-        asyncCallbackKey = Rubylet.getConstant(runtime, "ASYNC_CALLBACK");
-        symAsync = runtime.newSymbol("async");
     }
     
     @JRubyMethod(optional = 1, visibility = Visibility.PRIVATE)
@@ -136,36 +132,53 @@ public final class Servlet extends RubyObject implements javax.servlet.Servlet {
         return servletConfig;
     }
     
-    private AsyncCallback getAsyncCallback(ThreadContext context, Environment env) {
-        return (AsyncCallback) env.op_aref(context, asyncCallbackKey);
+    /**
+     * Get the value at the key 'async.callback' in {@code env}, a Rack environment
+     * hash.
+     * 
+     * @param context
+     * @param env a Rack environment hash
+     * @return the value at 'async.callback'
+     */
+    private AsyncCallback getAsyncCallback(ThreadContext context, RubyHash env) {
+        return (AsyncCallback) env.op_aref(context, constants.ASYNC_CALLBACK);
     }
     
     @Override
     public void service(ServletRequest _req, ServletResponse _resp)
             throws ServletException, IOException
     {
-        final Ruby runtime = getRuntime();
         final HttpServletRequest req = (HttpServletRequest) _req;
         final HttpServletResponse resp = (HttpServletResponse) _resp;
 
-        //final Environment env = Environment.dupPrototype(runtime, req);
-        //final Environment env = new Environment(runtime, runtime.getModule("Rubylet").defineModuleUnder("Rack").getClass("Environment"));
-        //env.populateFromEmpty(req);
-        final RubyHash env = envBuilder.newEnvironmentHash(req);
-
-        //serviceMaybeAsync(req, resp, env);
-        serviceNoAsync(req, resp, env);
-    }
-    
-    private void serviceNoAsync(HttpServletRequest req, HttpServletResponse resp, final RubyHash env) throws IOException {
         final Ruby runtime = getRuntime();
         final ThreadContext context = runtime.getCurrentContext();
+        final RubyHash env = envBuilder.newEnvironmentHash(req);
 
-        if (req.getServletContext().getEffectiveMajorVersion() >= 3 && req.isAsyncSupported()) {
-            env.put(asyncCallbackKey, new AsyncCallback(runtime, cAsyncCallback, req));
+        if (isAsyncSupported(req)) {
+            env.put(constants.ASYNC_CALLBACK,
+                    new AsyncCallback(runtime, constants.cAsyncCallback, req));
+            callAppMaybeAsync(context, req, resp, env);
+        } else {
+            callApp(context, req, resp, env);
         }
-
+    }
+    
+    private boolean isAsyncSupported(HttpServletRequest req) {
+        return (req.getServletContext().getEffectiveMajorVersion() >= 3 &&
+                req.isAsyncSupported());
+    }
+    
+    /**
+     * Call down to the Rack application without support for asynchronous responses.
+     */
+    private void callApp(ThreadContext context,
+                         HttpServletRequest req,
+                         HttpServletResponse resp,
+                         RubyHash env) throws IOException
+    {
         final IRubyObject response = app.callMethod(context, "call", env);
+
         // response is a Rack response [status, headers, body]
         final RubyArray ary = response.convertToArray();
             
@@ -176,14 +189,18 @@ public final class Servlet extends RubyObject implements javax.servlet.Servlet {
         final ResponseHelper wrappedResp = new ResponseHelper(resp, this, getMetaClass());
         wrappedResp.respond(context, status, headers, body);
     }
-    
-    private void serviceMaybeAsync(HttpServletRequest req, HttpServletResponse resp, final Environment env) throws IOException {
-        final Ruby runtime = getRuntime();
-        final ThreadContext context = runtime.getCurrentContext();
 
-        if (req.getServletContext().getEffectiveMajorVersion() >= 3 && req.isAsyncSupported()) {
-            env.put(asyncCallbackKey, new AsyncCallback(runtime, cAsyncCallback, req));
-        }
+    /**
+     * Call down to the Rack application.  If the app starts an asynchronous response
+     * either by throwing the symbol {@code :async} or returning with a status of
+     * {@code -1}, the response is put into asynchronous mode and the app is expected
+     * to complete the response via appropriate calls to the async callback.
+     */
+    private void callAppMaybeAsync(ThreadContext context,
+                                   HttpServletRequest req,
+                                   HttpServletResponse resp,
+                                   final RubyHash env) throws IOException
+    {
 
         final Block block = CallBlock.newCallClosure(this, getMetaClass(), Arity.NO_ARGUMENTS, new BlockCallback() {
 
@@ -203,11 +220,14 @@ public final class Servlet extends RubyObject implements javax.servlet.Servlet {
          * 
          * If :async is thrown, returns nil?
          */
-        final RubyContinuation rbContinuation = new RubyContinuation(runtime, symAsync);
+        final RubyContinuation rbContinuation = new RubyContinuation(getRuntime(),
+                                                                     constants.symAsync);
         try {
             context.pushCatch(rbContinuation.getContinuation());
 
-            final IRubyObject response = rbContinuation.enter(context, symAsync, block);
+            final IRubyObject response = rbContinuation.enter(context,
+                                                              constants.symAsync,
+                                                              block);
             if (response.isNil()) {
                 // async was thrown
                 getAsyncCallback(context, env).ensureStarted();

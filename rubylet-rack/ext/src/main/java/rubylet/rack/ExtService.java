@@ -9,10 +9,9 @@ public class ExtService implements BasicLibraryService {
 
     public boolean basicLoad(Ruby runtime) {
         StaticFileFilter.create(runtime);
-        Hash.create(runtime);
-        Environment.create(runtime);
         Servlet.create(runtime);
         AsyncCallback.create(runtime);
+        Constants.makeInstance(runtime);
         return true;
     }
 
