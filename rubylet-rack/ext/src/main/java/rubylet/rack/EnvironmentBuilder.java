@@ -196,18 +196,26 @@ public final class EnvironmentBuilder {
         return buf.toString();
     }
     
+    /**
+     * Compare strings case insensitively.
+     * 
+     * @param a must not be null
+     * @param b
+     * @return
+     */
+    private boolean match(String a, String b) {
+        return a.equalsIgnoreCase(b);
+    }
+    
     private IRubyObject getRackHeader(Ruby runtime, String str) {
-        return runtime.newString(toRackHeader(str));
-        /*
         // test for some common headers
-             if ("Content-Length".equals(str)) { return getConstant("CONTENT_LENGTH"); }
-        else if ("Content-Type".equals(str))   { return getConstant("CONTENT_TYPE"); }
-        else if ("Host".equals(str))           { return getConstant("HTTP_HOST"); }
-        else if ("Accept".equals(str))         { return getConstant("HTTP_ACCEPT"); }
-        else if ("User-Agent".equals(str))     { return getConstant("HTTP_USER_AGENT"); }
-        else if ("Connection".equals(str))     { return getConstant("HTTP_CONNECTION"); }
+             if (match("Content-Length", str)) { return c.CONTENT_LENGTH; }
+        else if (match("Content-Type", str))   { return c.CONTENT_TYPE; }
+        else if (match("Host", str))           { return c.HTTP_HOST; }
+        else if (match("Accept", str))         { return c.HTTP_ACCEPT; }
+        else if (match("User-Agent", str))     { return c.HTTP_USER_AGENT; }
+        else if (match("Connection", str))     { return c.HTTP_CONNECTION; }
         else { return runtime.newString(toRackHeader(str)); }
-        */
     }
     
     /**

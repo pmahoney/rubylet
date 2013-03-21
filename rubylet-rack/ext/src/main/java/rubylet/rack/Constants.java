@@ -71,13 +71,23 @@ public final class Constants {
     public final RubyString SERVER_SOFTWARE;
     
     public final RubyString TRANSFER_ENCODING;
-    
+
+    // some HTTP methods
     public final RubyString GET;
     public final RubyString POST;
     public final RubyString PUT;
     public final RubyString OPTIONS;
     public final RubyString HEAD;
     public final RubyString DELETE;
+    
+    // Rack versions of some HTTP headers
+    public final RubyString CONTENT_LENGTH;
+    public final RubyString CONTENT_TYPE;
+    public final RubyString HTTP_HOST;
+    public final RubyString HTTP_ACCEPT;
+    public final RubyString HTTP_USER_AGENT;
+    public final RubyString HTTP_CONNECTION;
+
     
     /**
      * Rubylet::Rack::AsyncCallback
@@ -148,6 +158,14 @@ public final class Constants {
         HEAD = frozenString("HEAD");
         OPTIONS = frozenString("OPTIONS");
         DELETE = frozenString("DELETE");
+        
+        // Rack versions of some HTTP headers
+        CONTENT_LENGTH = frozenString("CONTENT_LENGTH");
+        CONTENT_TYPE = frozenString("CONTENT_TYPE");
+        HTTP_HOST = frozenString("HTTP_HOST");
+        HTTP_ACCEPT = frozenString("HTTP_ACCEPT");
+        HTTP_USER_AGENT = frozenString("HTTP_USER_AGENT");
+        HTTP_CONNECTION = frozenString("HTTP_CONNECTION");
     }
     
     private RubyString frozenString(String str) {
