@@ -6,7 +6,23 @@ Rubylet [![Build Status][travis-img]][travis-ci]
 
 A collection of Ruby and Java code to support running Rack
 applications (Rails, Sinatra, others) inside Java Servlet containers
-(Jetty, others).
+such as Jetty and Tomcat.
+
+Why Use It?
+----------
+
+This is an experimental work-in-progress and not recommended for
+production use.
+
+That said, some goals are:
+
+* Support for `throw :async`, the not-quite-standard Rack asynchronous
+  api, when using a Servlet container supporting the Servlet 3
+  API. (See [Asynchronous responses in
+  Rack](http://polycrystal.org/2012/04/15/asynchronous_responses_in_rack.html)).
+
+* Lower per-request overhead compared to JRuby-Rack and others (much
+  of the core is written in Java to help with this goal)
 
 rubylet-rack
 ------------
@@ -14,6 +30,9 @@ rubylet-rack
 An implementation of the Java Servlet API that forwards to a
 contained Rack application as an alternative to
 [JRuby-Rack](https://github.com/jruby/jruby-rack).
+
+Supports Rack asynchronous responses initiated with `throw
+:async`.
 
     # Java Servlet classes must be available before loading 'rubylet/rack'
 
@@ -36,6 +55,10 @@ With a standard `config.ru`, and a `public` folder, the following will
 load the rack application and serve static files directly from Jetty:
 
     rackup -s rubylet
+
+Experimental Tomcat support:
+
+    rackup -s rubylet -O Engine=tomcat
 
 rubylet-ee
 ----------
