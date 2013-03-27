@@ -89,16 +89,16 @@
     </resources>
     <plugins>
       <plugin>
-	      <groupId>de.saumya.mojo</groupId>
-	      <artifactId>gem-maven-plugin</artifactId>
-	      <version>0.28.6</version>
-	      <executions>
-	        <execution>
-	          <goals>
-	            <goal>initialize</goal>
-	          </goals>
-	        </execution>
-	      </executions>
+        <groupId>de.saumya.mojo</groupId>
+        <artifactId>gem-maven-plugin</artifactId>
+        <version>0.28.6</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>initialize</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
