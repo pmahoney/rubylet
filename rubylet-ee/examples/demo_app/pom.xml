@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.commongroundpublishing</groupId>
   <artifactId>rubylet-ee-demo</artifactId>
-  <version>1.0.0</version>
+  <version>1.1</version>
   <name>RubyletEE Demo</name>
   <url>http://github.com/commonground/rubylet</url>
   <description>Demo app using RubyletEE</description>
@@ -16,7 +16,7 @@
     </license>
   </licenses>
   <properties>
-    <jruby.version>1.7.1</jruby.version>
+    <jruby.version>1.7.3</jruby.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
@@ -36,12 +36,12 @@
     <dependency>
       <groupId>com.commongroundpublishing</groupId>
       <artifactId>rubylet-ee</artifactId>
-      <version>0.2.0-SNAPSHOT</version>
+      <version>1.0.0</version>
     </dependency>
     <dependency>
       <groupId>com.commongroundpublishing</groupId>
       <artifactId>slf4j-servletcontext</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0</version>
     </dependency>
     <dependency>
       <groupId>org.jruby</groupId>
