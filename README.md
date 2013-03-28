@@ -45,14 +45,14 @@ Supports Rack asynchronous responses initiated with `throw
 :async`.
 
 ```ruby
-    # Java Servlet classes must be available before loading 'rubylet/rack'
+# Java Servlet classes must be available before loading 'rubylet/rack'
 
-    require 'rubylet/rack'
+require 'rubylet/rack'
 
-    app = build_my_rack_application()
-    servlet = Rubylet::Rack::Servlet.new(app)
+app = build_my_rack_application()
+servlet = Rubylet::Rack::Servlet.new(app)
 
-    # hand the servlet off to a Java Servlet container
+# hand the servlet off to a Java Servlet container
 ```
 
 
