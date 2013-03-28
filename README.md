@@ -26,7 +26,9 @@ That said, some goals are:
   of a trivial "hello world" app with 10k request warmup followed by
   60 seconds of requests at one per second:
 
-![Simple benchmark][http://polycrystal.org/~pat/scratch/rubylet-bench1.png]
+  ![Simple benchmark][bench1]
+
+[bench1]: http://polycrystal.org/~pat/scratch/rubylet-bench1.png
 
 Note the performance difference compared to Trinidad (JRuby-Rack) is
 negligible for a typical Rails app where a given page load takes more
