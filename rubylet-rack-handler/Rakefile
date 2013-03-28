@@ -3,7 +3,7 @@ require 'rubygems/package_task'
 
 def gemspec
   unless @gemspec
-    file = File.expand_path(File.join(__FILE__, '../rubylet-jetty.gemspec'))
+    file = File.expand_path(File.join(__FILE__, '../rubylet-rack-handler.gemspec'))
     @gemspec = Gem::Specification.load(file)
   end
 
