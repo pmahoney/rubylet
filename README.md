@@ -24,7 +24,7 @@ That said, some goals are:
 * Lower per-request overhead compared to JRuby-Rack and others (much
   of the core is written in Java to help with this goal).  A benchmark
   of a trivial "hello world" app with 10k request warmup followed by
-  60 seconds of requests at one per second:
+  60 seconds of requests at ten per second:
 
   ![Simple benchmark][bench1]
 
