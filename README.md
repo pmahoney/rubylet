@@ -22,7 +22,17 @@ That said, some goals are:
   Rack](http://polycrystal.org/2012/04/15/asynchronous_responses_in_rack.html)).
 
 * Lower per-request overhead compared to JRuby-Rack and others (much
-  of the core is written in Java to help with this goal)
+  of the core is written in Java to help with this goal).  A benchmark
+  of a trivial "hello world" app with 10k request warmup (not shown)
+  followed by 60 seconds of requests at ten per second:
+
+  ![Simple benchmark][bench1]
+
+[bench1]: http://polycrystal.org/~pat/scratch/rubylet-bench1.png
+
+Note the performance difference compared to Trinidad (JRuby-Rack) is
+negligible for a typical Rails app where a given page load takes more
+than a few milliseconds.
 
 rubylet-rack
 ------------
@@ -34,14 +44,16 @@ contained Rack application as an alternative to
 Supports Rack asynchronous responses initiated with `throw
 :async`.
 
-    # Java Servlet classes must be available before loading 'rubylet/rack'
+```ruby
+# Java Servlet classes must be available before loading 'rubylet/rack'
 
-    require 'rubylet/rack'
+require 'rubylet/rack'
 
-    app = build_my_rack_application()
-    servlet = Rubylet::Rack::Servlet.new(app)
+app = build_my_rack_application()
+servlet = Rubylet::Rack::Servlet.new(app)
 
-    # hand the servlet off to a Java Servlet container
+# hand the servlet off to a Java Servlet container
+```
 
 
 rubylet-rack-handler
@@ -54,11 +66,11 @@ testing and development purposes only.
 With a standard `config.ru`, and a `public` folder, the following will
 load the rack application and serve static files directly from Jetty:
 
-    rackup -s rubylet
+    $ rackup -s rubylet
 
 Experimental Tomcat support:
 
-    rackup -s rubylet -O Engine=tomcat
+    $ rackup -s rubylet -O Engine=tomcat
 
 rubylet-ee
 ----------

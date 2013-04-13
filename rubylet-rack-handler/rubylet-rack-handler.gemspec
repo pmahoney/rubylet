@@ -13,6 +13,7 @@ Gem::Specification.new do |s|
                       'spec/**/*.rb']
 
   s.add_dependency 'mini_aether', '>= 0.0.7'
+  s.add_dependency 'rubylet-rack', ">= #{s.version}"
 
   s.add_development_dependency 'minitest'
   s.add_development_dependency 'minitest-matchers'
