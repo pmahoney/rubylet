@@ -1,11 +1,3 @@
 source 'http://rubygems.org'
 gemspec
-gem "unf", "=0.0.5"
 
-gem "unf", "=0.0.5"
-
-gem "unf", "=0.0.5"
-
-gem "unf", "=0.0.5"
-
-gem "unf", "=0.0.5"
