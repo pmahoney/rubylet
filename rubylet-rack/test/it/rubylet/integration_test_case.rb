@@ -1,6 +1,7 @@
 require 'jruby/vm'
 require 'mechanize'
 require 'mini_aether'
+require 'socket'
 
 $CLASSPATH << File.expand_path('../../', __FILE__)
 MiniAether.setup do
@@ -106,47 +107,64 @@ module Rubylet
         @params = params
         @agent = Mechanize.new
 
-        scope = Java::OrgJrubyEmbed::LocalContextScope::THREADSAFE
-        mode = Java::OrgJruby::RubyInstanceConfig::CompileMode::OFF
-        @container = Java::OrgJrubyEmbed::ScriptingContainer.new(scope)
-        @container.setCompileMode(mode) # for short lived tests, no-compile is faster
-        @container.setCurrentDirectory(app_root)
-        @container.getProvider.getRubyInstanceConfig.setUpdateNativeENVEnabled(false)
-        servlet = @container.runScriptlet <<-EOF
-          ENV['BUNDLE_GEMFILE'] = File.join(Dir.pwd, 'Gemfile')
-          if !File.exists?('Gemfile.lock') || (File.mtime('Gemfile') > File.mtime('Gemfile.lock'))
+        Dir.chdir(app_root) do
+          gemfile = File.expand_path('Gemfile')
+          gemfile_lock = gemfile + '.lock'
+          # bundle install if necessary
+          if !File.exists?(gemfile) || (File.mtime(gemfile) > File.mtime(gemfile_lock))
             puts "----- bundle install"
-            require 'bundler'
-            require 'bundler/cli'
-            Bundler::CLI.start(['install', '--quiet'])
+            system('bundle install --quiet')
+            $?.success? || raise("Error running 'bundle install' in #{Dir.pwd}")
           end
-          ENV['BUNDLE_WITHOUT'] = 'development:test'
-          require 'bundler/setup'
-          require 'rubylet/rack'
-          Rubylet::Rack::Servlet.new
-        EOF
 
-        # we have the servlet; now setup jetty
-        context = ServletContextHandler.new(ServletContextHandler::SESSIONS)
-        context.setContextPath(params[:context_path])
+          env = {
+            'BUNDLE_GEMFILE' => gemfile,
+            'BUNDLE_WITHOUT' => 'development:test',
+            'RUBY_OPT' => nil
+          }
+          command = ['jruby', '-X-C', '-G', '-S',
+                     'rackup',
+                     '-p', port.to_s,
+                     '-s', 'Rubylet',
+                     '-O', "ContextPath=#{params[:context_path]}",
+                     '-O', "UrlPattern=#{params[:url_pattern]}"]
+          puts command.join(' ')
+          @rackup = Process.spawn(env, *command)
+          @rackup || raise("Error starting integration test server")
 
-        holder = ServletHolder.new(servlet)
-        holder.setInitParameter 'rubylet.appRoot', app_root
-        context.addServlet holder, params[:url_pattern]
-
-        @server = Server.new(port)
-        @server.setHandler(context)
-        @server.start
+          # poll until server is listening
+          start = Time.now
+          begin
+            s = Socket.new Socket::AF_INET, Socket::SOCK_STREAM
+            addr = Socket.pack_sockaddr_in(port, 'localhost')
+            s.connect addr
+            puts "server started"
+          rescue => e
+            elapsed = (Time.now - start).to_i
+            raise "timeout waiting for server to start" if elapsed > 600
+            puts "waiting for server to start... (#{elapsed}s)"
+            sleep 5
+            retry
+          end
+        end
       end
 
-      # Stop the embedded Jetty and JRuby runtime.
       def teardown_suite
-        if @server
-          @server.stop
-          @server.join
-        end
+        if @rackup
+          begin
+            Process.kill('INT', @rackup)
+          rescue Errno::ECHILD, Errno::ESRCH
+            # maybe it already exited?
+          end
 
-        @container.terminate if @container
+          begin
+            puts "waiting for server to exit..."
+            Process.wait
+            puts "server exited"
+          rescue Errno::ECHILD
+            # already exited
+          end
+        end
       end
     end
 
