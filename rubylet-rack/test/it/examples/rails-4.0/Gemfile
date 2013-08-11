@@ -1,0 +1,7 @@
+source 'https://rubygems.org'
+
+gem 'rubylet-rack', :path => '../../../..', :require => false
+gem 'rubylet-rack-handler', :path => '../../../../../rubylet-rack-handler', :require => false
+
+gem 'rails', '~> 4.0.0'
+gem 'json'
