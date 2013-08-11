@@ -24,21 +24,28 @@ class Rubylet::Rack::Handler::Jetty
   DefaultServlet         = Java::OrgEclipseJettyServlet::DefaultServlet
   DispatcherType         = Java::JavaxServlet::DispatcherType
 
-  attr_reader :options
+  attr_reader :context_path, :url_pattern, :threads, :no_public, :public_root, :port, :host
 
   def initialize(app, options)
-    @app = app
-    @options = options
-    @contextPath = options[:ContextPath] || '/'
+    @context_path = options[:ContextPath]
+    @url_pattern  = options[:UrlPattern]
+    @threads      = options[:Threads] && options[:Threads].to_i
+    @no_public    = options[:NoPublic]
+    @public_root  = options[:PublicRoot]
+    @port         = options[:Port].to_i
+    @host         = options[:Host]
 
-    @context = ServletContextHandler.new(ServletContextHandler::SESSIONS)
-    @context.setContextPath(@contextPath)
-    
-    add_public unless options[:NoPublic]
-    add_rack_app
+    context = ServletContextHandler.new(ServletContextHandler::SESSIONS)
+    context.setContextPath(context_path)
 
+    # order matters here; rubylet must be added *after* the
+    # default servlet so that rubylet has priority
+    add_public(context) unless no_public
+
+    context.addServlet ServletHolder.new(make_servlet(app)), url_pattern
+      
     @server = make_server
-    @server.setHandler(@context)
+    @server.setHandler(context)
   end
 
   def start
@@ -55,30 +62,27 @@ class Rubylet::Rack::Handler::Jetty
 
   private
 
-  # order matters here; rubylet must be added *after* the
-  # default servlet so that rubylet has priority
-  def add_rack_app
-    ServletHolder.new(Rubylet::Rack::Servlet.new(@app)).tap do |holder|
-      @context.addServlet holder, '/*'
+  def make_servlet(app)
+    case app
+    when Java::JavaxServlet::Servlet
+      app
+    else
+      Rubylet::Rack::Servlet.new(app)
     end
   end
 
   def make_server
-    server = Server.new
+    Server.new.tap do |server|
+      SelectChannelConnector.new.tap do |connector|
+        connector.setPort port
+        connector.setHost host
+        server.addConnector connector
+      end
 
-    connector = SelectChannelConnector.new
-    connector.setPort options[:Port].to_i
-    connector.setHost options[:Host]
-    server.addConnector connector
-
-    if options[:Threads]
-      pool = ExecutorThreadPool.new(options[:Threads].to_i,
-                                    options[:Threads].to_i,
-                                    0)
-      server.setThreadPool pool
+      if threads
+        server.setThreadPool ExecutorThreadPool.new(threads, threads, 0)
+      end
     end
-
-    server
   end
 
   # Add a filter that will serve static files if they exist, or
@@ -86,9 +90,7 @@ class Rubylet::Rack::Handler::Jetty
   #
   # Installs a default servlet at '/*', so must be called before
   # the rack app's servlet is added so rack will take priority.
-  def add_public
-    public_root = options[:PublicRoot] || 'public'
-
+  def add_public(context)
     FilterHolder.new(Rubylet::StaticFileFilter.new).tap do |holder|
       holder.setInitParameter 'resourceBase', public_root
       types = [DispatcherType::ASYNC,
@@ -97,17 +99,17 @@ class Rubylet::Rack::Handler::Jetty
                DispatcherType::INCLUDE,
                DispatcherType::REQUEST]
       dispatches = Java::JavaUtil::EnumSet.of(*types)
-      @context.addFilter holder, '/*', dispatches
+      context.addFilter holder, url_pattern, dispatches
     end
 
     ServletHolder.new('default', DefaultServlet.new).tap do |holder|
       {
-        'acceptRanges' => true,
+        'acceptRanges'    => true,
         'welcomeServlets' => false,
-        'gzip' => true,
-        'resourceBase' => public_root
+        'gzip'            => true,
+        'resourceBase'    => public_root
       }.each { |k,v| holder.setInitParameter(k, v.to_s) }
-      @context.addServlet holder, '/*'
+      context.addServlet holder, '/*'
     end
   end
 end
