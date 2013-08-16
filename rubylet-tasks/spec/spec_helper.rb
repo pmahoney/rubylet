@@ -3,8 +3,10 @@ if RUBY_VERSION =~ /^1.8/
   gem 'minitest'
 end
 
-require 'minitest/spec'
 require 'minitest/autorun'
+require 'minitest/matchers/version' # workaround minitest/matchers'
+                                    # failure to define
+                                    # Minitest::Matchers
 require 'minitest/matchers'
 
 # Validation matcher of XMl text against a schema.  TODO: should fetch
@@ -52,4 +54,4 @@ class Validate
   end
 end
 
-MiniTest::Unit::TestCase.register_matcher Validate, :validate
+Minitest::Test.register_matcher Validate, :validate
