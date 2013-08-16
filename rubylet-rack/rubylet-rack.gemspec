@@ -16,7 +16,8 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency 'mechanize'
   s.add_development_dependency 'mini_aether'
-  s.add_development_dependency 'minitest-matchers'
+  s.add_development_dependency 'minitest', '~> 5.0.6'
+  s.add_development_dependency 'minitest-matchers', '~> 1.4.0'
   s.add_development_dependency 'rake'
   # mechanize -> domain_name -> unf, but unf_ext 0.0.6 breaks on JRuby
   s.add_development_dependency 'unf', '<= 0.0.5'

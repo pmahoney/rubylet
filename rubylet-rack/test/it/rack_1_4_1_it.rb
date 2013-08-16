@@ -2,7 +2,7 @@
 
 require 'it_helper'
 
-class Rack_1_4_1_It < MiniTest::Unit::TestCase
+class Rack_1_4_1_It < Minitest::Test
   include Rubylet::IntegrationTestCase
   self.app_root = File.expand_path('../examples/rack-1.4.1', __FILE__)
 

@@ -4,7 +4,7 @@ require 'it_helper'
 
 require 'net/http'
 
-class Rack_1_5_0_It < MiniTest::Unit::TestCase
+class Rack_1_5_0_It < Minitest::Test
   include Rubylet::IntegrationTestCase
   self.app_root = File.expand_path('../examples/rack-1.5.0', __FILE__)
 

@@ -3,6 +3,9 @@ require 'mechanize'
 require 'mini_aether'
 require 'socket'
 
+require 'rubylet/class_lifecycle'
+require 'rubylet/parameterized'
+
 $CLASSPATH << File.expand_path('../../', __FILE__)
 MiniAether.setup do
   jar 'org.eclipse.jetty:jetty-servlet:8.1.7.v20120910'
@@ -12,26 +15,24 @@ end
 module Rubylet
   module IntegrationTestCase
     def self.included(mod)
+      mod.extend ClassLifecycle
       mod.extend ClassMethods
-    end
+      mod.extend Parameterized
 
-    def port
-      self.class.port
-    end
-
-    def params
-      self.class.params
+      mod.parameterize(:context_path => ['/', '/test_app'],
+                       :url_pattern => ['/*', '/sub_path/*'],
+                       :port => [9876])
     end
 
     def uri(path)
       # assume url_pattern is <something>/*
-      pattern = if params[:url_pattern] =~ /^(.*)\/\*/
+      pattern = if url_pattern =~ /^(.*)\/\*/
                   $1
                 else
                   ''
                 end
       File.join("http://localhost:#{port}",
-                params[:context_path],
+                context_path,
                 pattern,
                 path)
     end
@@ -73,45 +74,35 @@ module Rubylet
       ExecutorThreadPool = Java::OrgEclipseJettyUtilThread::ExecutorThreadPool
       DefaultServlet = Java::OrgEclipseJettyServlet::DefaultServlet
 
-      def parameters
-        {
-          :context_path => ['/', '/test_app'],
-          :url_pattern => ['/*', '/sub_path/*']
-        }
-      end
-
-      attr_reader :params
       attr_reader :agent
       attr_writer :app_root
       attr_writer :port
 
-      def app_root
-        @app_root || raise("set this in #{self} to point to app root")
+      def app_root(klass = self)
+        if klass.eql?(Object)
+          raise("set this in #{self} to point to app root")
+        else
+          klass.instance_variable_get(:@app_root) || app_root(klass.superclass)
+        end
       end
 
-      def to_s
-        "#{File.basename(app_root)} with #{params}"
-      end
-
-      def port
-        @port || 9876
-      end
+      # def to_s
+      #   "#{File.basename(app_root)} with #{context_path}, #{url_pattern}"
+      # end
 
       def site
         @site ||= RestClient::Resource.new("http://localhost:#{port}/")
       end
 
-      # In a separate JRuby runtime, create a servlet instance.  In this
-      # runtime, start a Jetty server using that servlet.
-      def setup_suite(params)
-        @params = params
+      # In a separate JRuby process, start a server.
+      def before_class
         @agent = Mechanize.new
 
         Dir.chdir(app_root) do
           gemfile = File.expand_path('Gemfile')
           gemfile_lock = gemfile + '.lock'
           # bundle install if necessary
-          if !File.exists?(gemfile) || (File.mtime(gemfile) > File.mtime(gemfile_lock))
+          if !File.exists?(gemfile_lock) || (File.mtime(gemfile) > File.mtime(gemfile_lock))
             puts "----- bundle install"
             system('bundle install --quiet')
             $?.success? || raise("Error running 'bundle install' in #{Dir.pwd}")
@@ -126,8 +117,8 @@ module Rubylet
                      'rackup',
                      '-p', port.to_s,
                      '-s', 'Rubylet',
-                     '-O', "ContextPath=#{params[:context_path]}",
-                     '-O', "UrlPattern=#{params[:url_pattern]}"]
+                     '-O', "ContextPath=#{context_path}",
+                     '-O', "UrlPattern=#{url_pattern}"]
           puts command.join(' ')
           @rackup = Process.spawn(env, *command)
           @rackup || raise("Error starting integration test server")
@@ -149,7 +140,7 @@ module Rubylet
         end
       end
 
-      def teardown_suite
+      def after_class
         if @rackup
           begin
             Process.kill('INT', @rackup)
