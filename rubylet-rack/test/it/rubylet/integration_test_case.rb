@@ -105,7 +105,7 @@ module Rubylet
           env = {
             'BUNDLE_GEMFILE' => gemfile,
             'BUNDLE_WITHOUT' => 'development:test',
-            'RUBY_OPT' => nil
+            'RUBYOPT' => nil
           }
 
           # bundle install if necessary
