@@ -101,18 +101,20 @@ module Rubylet
         Dir.chdir(app_root) do
           gemfile = File.expand_path('Gemfile')
           gemfile_lock = gemfile + '.lock'
-          # bundle install if necessary
-          if !File.exists?(gemfile_lock) || (File.mtime(gemfile) > File.mtime(gemfile_lock))
-            puts "----- bundle install"
-            system('bundle install --quiet')
-            $?.success? || raise("Error running 'bundle install' in #{Dir.pwd}")
-          end
 
           env = {
             'BUNDLE_GEMFILE' => gemfile,
             'BUNDLE_WITHOUT' => 'development:test',
             'RUBY_OPT' => nil
           }
+
+          # bundle install if necessary
+          if !File.exists?(gemfile_lock) || (File.mtime(gemfile) > File.mtime(gemfile_lock))
+            puts "----- bundle install"
+            system(env, 'bundle install')
+            $?.success? || raise("Error running 'bundle install' in #{Dir.pwd}")
+          end
+
           command = ['jruby', '-X-C', '-G', '-S',
                      'rackup',
                      '-p', port.to_s,
