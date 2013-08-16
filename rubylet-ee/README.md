@@ -92,7 +92,7 @@ Create a maven project to build a WAR file.
       <packaging>war</packaging>
 
 Declare dependencies on `org.jruby:jruby-complete` and
-`com.commongroundpublishing:rubylet-ee`.
+`org.polycrystal:rubylet-ee`.
 
 One way to package everything into the WAR file is to use the
 [Torquebox Rubygems Maven Proxy Repository](http://rubygems-proxy.torquebox.org/)
@@ -165,7 +165,7 @@ Create a maven project to build a WAR file.
       ...
       <packaging>war</packaging>
 
-Declare dependencies on `com.commongroundpublishing:rubylet-ee`.
+Declare dependencies on `org.polycrystal:rubylet-ee`.
 
 In the `web.xml`, configure as context parameters `rubylet.jrubyHome`
 and `rubylet.appRoot`.
@@ -183,7 +183,7 @@ Configure an instance of `RestartableServlet`.
 
     <servlet>
       <servlet-name>rubylet-servlet</servlet-name>
-      <servlet-class>com.commongroundpublishing.rubylet.RestartableServlet</servlet-class>
+      <servlet-class>org.polycrystal.rubylet.RestartableServlet</servlet-class>
       <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>

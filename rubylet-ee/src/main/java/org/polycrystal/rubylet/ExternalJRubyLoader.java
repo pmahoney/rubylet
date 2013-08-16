@@ -1,4 +1,4 @@
-package com.commongroundpublishing.rubylet;
+package org.polycrystal.rubylet;
 
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
  * But it may or may not make a difference to load an external JRuby if it's
  * already available in a parent class laoder. 
  *
- * @author Patrick Mahoney <patrick.mahoney@commongroundpublishing.com>
+ * @author Patrick Mahoney <pat@polycrystal.org>
  */
 public class ExternalJRubyLoader implements ServletContextListener {
     

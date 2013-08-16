@@ -1,4 +1,4 @@
-package com.commongroundpublishing.rubylet;
+package org.polycrystal.rubylet;
 
 import static junitx.framework.StringAssert.assertContains;
 import static junitx.framework.StringAssert.assertNotContains;

@@ -25,16 +25,16 @@
     <listener-class>com.commongroundpublishing.slf4j.impl.ServletContextLoggerSCL</listener-class>
   </listener>
   <listener>
-    <listener-class>com.commongroundpublishing.rubylet.ExternalJRubyLoader</listener-class>
+    <listener-class>org.polycrystal.rubylet.ExternalJRubyLoader</listener-class>
   </listener>
   <servlet>
     <servlet-name>rubylet-servlet</servlet-name>
-    <servlet-class>com.commongroundpublishing.rubylet.RestartableServlet</servlet-class>
+    <servlet-class>org.polycrystal.rubylet.RestartableServlet</servlet-class>
     <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet>
     <servlet-name>direct-servlet</servlet-name>
-    <servlet-class>com.commongroundpublishing.rubylet.RestartableServlet</servlet-class>
+    <servlet-class>org.polycrystal.rubylet.RestartableServlet</servlet-class>
     <init-param>
       <param-name>rubylet.servletClass</param-name>
       <param-value>Demo::Servlet</param-value>

@@ -1,4 +1,4 @@
-package com.commongroundpublishing.rubylet.jruby;
+package org.polycrystal.rubylet.jruby;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -16,12 +16,12 @@ import org.jruby.CompatVersion;
 import org.jruby.RubyInstanceConfig.CompileMode;
 import org.jruby.embed.LocalContextScope;
 
-import com.commongroundpublishing.rubylet.Factory;
-import com.commongroundpublishing.rubylet.config.ChainedConfig;
-import com.commongroundpublishing.rubylet.config.FilterConfigConfig;
-import com.commongroundpublishing.rubylet.config.IConfig;
-import com.commongroundpublishing.rubylet.config.ServletConfigConfig;
-import com.commongroundpublishing.rubylet.config.ServletContextConfig;
+import org.polycrystal.rubylet.Factory;
+import org.polycrystal.rubylet.config.ChainedConfig;
+import org.polycrystal.rubylet.config.FilterConfigConfig;
+import org.polycrystal.rubylet.config.IConfig;
+import org.polycrystal.rubylet.config.ServletConfigConfig;
+import org.polycrystal.rubylet.config.ServletContextConfig;
 
 public class RubyConfig {
     

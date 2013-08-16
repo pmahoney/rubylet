@@ -2,11 +2,11 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.commongroundpublishing</groupId>
+  <groupId>org.polycrystal</groupId>
   <artifactId>rubylet-ee-demo</artifactId>
-  <version>1.1</version>
+  <version>2.0</version>
   <name>RubyletEE Demo</name>
-  <url>http://github.com/commonground/rubylet</url>
+  <url>http://github.com/pmahoney/rubylet</url>
   <description>Demo app using RubyletEE</description>
   <packaging>war</packaging>
   <licenses>
@@ -34,9 +34,9 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.commongroundpublishing</groupId>
+      <groupId>org.polycrystal</groupId>
       <artifactId>rubylet-ee</artifactId>
-      <version>1.0.0</version>
+      <version>2.0.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.commongroundpublishing</groupId>

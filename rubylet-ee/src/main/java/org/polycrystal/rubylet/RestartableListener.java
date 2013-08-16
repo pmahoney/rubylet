@@ -1,14 +1,14 @@
-package com.commongroundpublishing.rubylet;
+package org.polycrystal.rubylet;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
-import com.commongroundpublishing.rubylet.config.ChainedConfig;
-import com.commongroundpublishing.rubylet.config.IConfig;
-import com.commongroundpublishing.rubylet.config.PrefixedConfig;
-import com.commongroundpublishing.rubylet.config.ServletContextConfig;
+import org.polycrystal.rubylet.config.ChainedConfig;
+import org.polycrystal.rubylet.config.IConfig;
+import org.polycrystal.rubylet.config.PrefixedConfig;
+import org.polycrystal.rubylet.config.ServletContextConfig;
 
-import static com.commongroundpublishing.rubylet.Util.assertNotNull;
+import static org.polycrystal.rubylet.Util.assertNotNull;
 
 public abstract class RestartableListener implements ServletContextListener, Restartable {
 

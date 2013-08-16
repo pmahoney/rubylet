@@ -1,4 +1,4 @@
-package com.commongroundpublishing.rubylet;
+package org.polycrystal.rubylet;
 
 import java.io.File;
 import java.io.IOException;

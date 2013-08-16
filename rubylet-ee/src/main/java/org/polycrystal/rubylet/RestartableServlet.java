@@ -1,4 +1,4 @@
-package com.commongroundpublishing.rubylet;
+package org.polycrystal.rubylet;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -9,12 +9,12 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import com.commongroundpublishing.rubylet.config.ChainedConfig;
-import com.commongroundpublishing.rubylet.config.IConfig;
-import com.commongroundpublishing.rubylet.config.ServletConfigConfig;
-import com.commongroundpublishing.rubylet.config.ServletContextConfig;
+import org.polycrystal.rubylet.config.ChainedConfig;
+import org.polycrystal.rubylet.config.IConfig;
+import org.polycrystal.rubylet.config.ServletConfigConfig;
+import org.polycrystal.rubylet.config.ServletContextConfig;
 
-import static com.commongroundpublishing.rubylet.Util.assertNotNull;
+import static org.polycrystal.rubylet.Util.assertNotNull;
 
 public final class RestartableServlet implements Servlet, Restartable {
     

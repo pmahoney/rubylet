@@ -22,12 +22,12 @@
   </listener>
   <servlet>
     <servlet-name>rubylet-servlet</servlet-name>
-    <servlet-class>com.commongroundpublishing.rubylet.RestartableServlet</servlet-class>
+    <servlet-class>org.polycrystal.rubylet.RestartableServlet</servlet-class>
     <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet>
     <servlet-name>direct-servlet</servlet-name>
-    <servlet-class>com.commongroundpublishing.rubylet.RestartableServlet</servlet-class>
+    <servlet-class>org.polycrystal.rubylet.RestartableServlet</servlet-class>
     <init-param>
       <param-name>rubylet.servletClass</param-name>
       <param-value>Demo::Servlet</param-value>

@@ -1,21 +1,21 @@
-package com.commongroundpublishing.rubylet;
+package org.polycrystal.rubylet;
 
 import javax.servlet.ServletContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.commongroundpublishing.rubylet.config.IConfig;
+import org.polycrystal.rubylet.config.IConfig;
 
 public class Util {
     
     private static final Logger logger = LoggerFactory.getLogger(Util.class);
     
     public static final String RESTARTABLE_RUBY_FACTORY =
-            "com.commongroundpublishing.rubylet.jruby.RestartableRubyFactory";
+            "org.polycrystal.rubylet.jruby.RestartableRubyFactory";
 
     public static final String RUBY_FACTORY =
-            "com.commongroundpublishing.rubylet.jruby.RubyFactory";
+            "org.polycrystal.rubylet.jruby.RubyFactory";
     
     public static final String RUNTIME_KEY = "rubylet.runtime";
     

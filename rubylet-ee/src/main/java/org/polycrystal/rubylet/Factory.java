@@ -1,11 +1,11 @@
-package com.commongroundpublishing.rubylet;
+package org.polycrystal.rubylet;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 
-import com.commongroundpublishing.rubylet.config.IConfig;
+import org.polycrystal.rubylet.config.IConfig;
 
 public interface Factory {
 

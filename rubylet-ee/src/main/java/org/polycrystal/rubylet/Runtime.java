@@ -1,6 +1,6 @@
-package com.commongroundpublishing.rubylet;
+package org.polycrystal.rubylet;
 
-import static com.commongroundpublishing.rubylet.Util.loadInstance;
+import static org.polycrystal.rubylet.Util.loadInstance;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -8,14 +8,14 @@ import javax.servlet.ServletContextListener;
 /**
  * Load RubyRuntime and forward events to it.
  * 
- * @author Patrick Mahoney <patrick.mahoney@commongroundpublishing.com>
+ * @author Patrick Mahoney <pat@polycrystal.org>
  */
 public class Runtime implements ServletContextListener {
     
     private ServletContextListener child;
 
     public void contextInitialized(ServletContextEvent sce) {
-        child = loadInstance("com.commongroundpublishing.rubylet.jruby.RubyRuntime",
+        child = loadInstance("org.polycrystal.rubylet.jruby.RubyRuntime",
                              ServletContextListener.class);
         child.contextInitialized(sce);
     }

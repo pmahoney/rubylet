@@ -1,4 +1,4 @@
-package com.commongroundpublishing.rubylet.jruby;
+package org.polycrystal.rubylet.jruby;
 
 import java.io.File;
 import java.util.Collections;
@@ -15,11 +15,11 @@ import javax.servlet.ServletException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.commongroundpublishing.rubylet.Restartable;
-import com.commongroundpublishing.rubylet.Factory;
-import com.commongroundpublishing.rubylet.config.IConfig;
+import org.polycrystal.rubylet.Restartable;
+import org.polycrystal.rubylet.Factory;
+import org.polycrystal.rubylet.config.IConfig;
 
-import static com.commongroundpublishing.rubylet.Util.assertNotNull;;
+import static org.polycrystal.rubylet.Util.assertNotNull;;
 
 public final class RestartableRubyFactory implements Factory {
     

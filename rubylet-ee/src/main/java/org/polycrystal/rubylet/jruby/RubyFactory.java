@@ -1,4 +1,4 @@
-package com.commongroundpublishing.rubylet.jruby;
+package org.polycrystal.rubylet.jruby;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -11,10 +11,10 @@ import org.jruby.embed.ScriptingContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.commongroundpublishing.rubylet.Factory;
-import com.commongroundpublishing.rubylet.config.IConfig;
+import org.polycrystal.rubylet.Factory;
+import org.polycrystal.rubylet.config.IConfig;
 
-import static com.commongroundpublishing.rubylet.Util.assertNotNull;
+import static org.polycrystal.rubylet.Util.assertNotNull;
 
 public final class RubyFactory implements Factory {
     

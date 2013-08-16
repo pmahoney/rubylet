@@ -1,4 +1,4 @@
-package com.commongroundpublishing.rubylet.config;
+package org.polycrystal.rubylet.config;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,7 +49,7 @@ public final class ChainedConfig implements IConfig {
      * size 2.  Keys existing in multiple members of the chain will show up
      * as duplicates.
      * 
-     * @author Patrick Mahoney <patrick.mahoney@commongroundpublishing.com>
+     * @author Patrick Mahoney <pat@polycrystal.org>
      */
     private static class ChainedEnumerations implements Enumeration<String> {
             

@@ -1,4 +1,4 @@
-package com.commongroundpublishing.rubylet.config;
+package org.polycrystal.rubylet.config;
 
 import java.util.Enumeration;
 

@@ -1,16 +1,16 @@
-package com.commongroundpublishing.rubylet.config;
+package org.polycrystal.rubylet.config;
 
 import java.util.Enumeration;
 
-import javax.servlet.ServletConfig;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletContext;
 
 
-public final class ServletConfigConfig implements IConfig{
+public final class FilterConfigConfig implements IConfig{
     
-    private final ServletConfig config;
+    private final FilterConfig config;
 
-    public ServletConfigConfig(ServletConfig config) {
+    public FilterConfigConfig(FilterConfig config) {
         this.config = config;
     }
     

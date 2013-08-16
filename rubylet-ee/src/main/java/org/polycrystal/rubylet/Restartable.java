@@ -1,4 +1,4 @@
-package com.commongroundpublishing.rubylet;
+package org.polycrystal.rubylet;
 
 import javax.servlet.ServletException;
 

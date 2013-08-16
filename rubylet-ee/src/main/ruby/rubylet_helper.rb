@@ -1,5 +1,5 @@
 class RubyletHelper
-  name = 'com.commonground.rubylet.jruby.' + self.to_s
+  name = 'org.polycrystal.rubylet.jruby.' + self.to_s
   @logger = Java::OrgSlf4j::LoggerFactory.getLogger(name)
   
   class << self
@@ -12,7 +12,7 @@ class RubyletHelper
     self.class.logger
   end
   
-  # @param [com.commongroundpublishing.rubylet.jruby.RubyConfig] config
+  # @param [org.polycrystal.rubylet.jruby.RubyConfig] config
   def boot(config)
     config.env.each do |key,value|
       logger.debug "ENV[{}] = {}", key, value

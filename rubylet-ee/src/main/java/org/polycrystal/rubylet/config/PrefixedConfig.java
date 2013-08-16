@@ -1,4 +1,4 @@
-package com.commongroundpublishing.rubylet.config;
+package org.polycrystal.rubylet.config;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -10,7 +10,7 @@ import javax.servlet.ServletContext;
  * Wraps another configuration, pulling only those config
  * values with keys beginning with a given prefix.
  * 
- * @author Patrick Mahoney <patrick.mahoney@commongroundpublishing.com>
+ * @author Patrick Mahoney <pat@polycrystal.org>
  *
  */
 public class PrefixedConfig implements IConfig {
