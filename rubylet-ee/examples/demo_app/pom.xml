@@ -16,7 +16,7 @@
     </license>
   </licenses>
   <properties>
-    <jruby.version>1.7.3</jruby.version>
+    <jruby.version>1.7.4</jruby.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
