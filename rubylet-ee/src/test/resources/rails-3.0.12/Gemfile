@@ -1,6 +1,5 @@
 source 'http://rubygems.org'
 
-gem 'jruby-openssl'
 gem 'rails', '3.0.12'
 gem 'rubylet-rack', :path => '../../../../rubylet-rack'
 

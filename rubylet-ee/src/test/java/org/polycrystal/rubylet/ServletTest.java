@@ -78,17 +78,12 @@ public class ServletTest {
     public static void bundleInstall() {
         withContainer(new ContainerAction() {
             
-            public void gem(String cmnd) {
-                Object args = run("'" + cmnd + "'.split.map{|s|\"'#{s}'\"}.join(',')");
-                run("Gem::GemRunner.new.run [" + args + "]");
+            public void gem(String args) {
+                run("Gem::GemRunner.new.run %w(" + args + ")");
             }
 
             public void call() {
                 run("require 'rubygems/gem_runner'");
-                gem("install " +
-                     "--conservative " +
-                     "--clear-sources --source http://rubygems.org/ " +
-                     "jruby-openssl");
                 gem("install --conservative bundler");
             }
             
